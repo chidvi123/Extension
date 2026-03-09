@@ -144,6 +144,7 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 });
 
 
+
 // 🔹 Idle detection
 chrome.idle.onStateChanged.addListener(async (state) => {
   console.log("Idle state:", state);
@@ -152,6 +153,19 @@ chrome.idle.onStateChanged.addListener(async (state) => {
     console.log("🛑 User idle for 15 minutes");
     await stopTracking();
   }
+});
+
+// 🔹 Listen for messages from content script
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+  if (message.type === "PROBLEM_DETECTED") {
+
+    console.log("📌 Problem detected:");
+
+    console.log(message.data);
+
+  }
+
 });
 
 
