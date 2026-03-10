@@ -8,14 +8,18 @@ let startTime = null;
 let currentTabId = null;
 let currentPlatform = null;
 
-//getting today date
+let currentProblem = null;
+let problemStartTime = null;
 
+
+// 🔹 Get today's date key
 function getTodayKey(){
-  const today=new Date();
-  return today.toISOString().split("T")[0]
+  const today = new Date();
+  return today.toISOString().split("T")[0];
 }
 
-// Detect platform
+
+// 🔹 Detect platform
 function getPlatform(url) {
   if (!url) return null;
 
@@ -26,8 +30,45 @@ function getPlatform(url) {
 }
 
 
-// Start tracking
+// 🔹 Save problem time
+async function saveProblemTime() {
+
+  if (!currentProblem || !problemStartTime) return;
+
+  const problemTime = Math.floor((Date.now() - problemStartTime) / 1000);
+
+  if (problemTime < 10){
+    console.log("Ignored short problem visit");
+    return;
+  } 
+
+  console.log("🧩 Problem session ended:", problemTime);
+
+  const todayKey = getTodayKey();
+
+  const result = await chrome.storage.local.get(todayKey);
+  const sessions = result[todayKey] || [];
+
+  sessions.push({
+    type: "problem",
+    platform: currentPlatform,
+    problem: currentProblem,
+    timeSpent: problemTime,
+    timestamp: Date.now()
+  });
+
+  await chrome.storage.local.set({
+    [todayKey]: sessions
+  });
+
+  currentProblem = null;
+  problemStartTime = null;
+}
+
+
+// 🔹 Start tracking
 function startTracking(tabId, platform) {
+
   if (isTracking && currentTabId === tabId && currentPlatform === platform) {
     return;
   }
@@ -41,50 +82,55 @@ function startTracking(tabId, platform) {
 }
 
 
-// Stop tracking
+// 🔹 Stop tracking
 async function stopTracking() {
+
   if (!isTracking) return;
 
-  const endTime=Date.now();
+  const endTime = Date.now();
   const duration = Math.floor((endTime - startTime) / 1000);
 
   if(duration < 5){
-    console.log("Ignored short session")
+    console.log("Ignored short session");
 
-    isTracking=false;
-    startTime=null;
-    currentTabId=null;
-    currentPlatform=null;
+    isTracking = false;
+    startTime = null;
+    currentTabId = null;
+    currentPlatform = null;
     return;
   }
 
   console.log("🔴 Tracking stopped");
   console.log("Platform:", currentPlatform);
   console.log("Session time (seconds):", duration);
-  
-  //get todays date
-  const todayKey=getTodayKey();
+
+  // save problem time
+  await saveProblemTime();
+
+  const todayKey = getTodayKey();
 
   try{
-    const result=await chrome.storage.local.get(todayKey);
 
-    const sessions=result[todayKey] || [];
+    const result = await chrome.storage.local.get(todayKey);
+    const sessions = result[todayKey] || [];
 
     sessions.push({
-      platform:currentPlatform,
-      start:startTime,
-      end:endTime,
-      duration:duration
+      type: "platform",
+      platform: currentPlatform,
+      start: startTime,
+      end: endTime,
+      duration: duration
     });
 
     await chrome.storage.local.set({
-      [todayKey]:sessions
+      [todayKey]: sessions
     });
 
-    console.log("Session stored",sessions);
+    console.log("Session stored", sessions);
+
   }
   catch(error){
-    console.error("Storage error",error);
+    console.error("Storage error", error);
   }
 
   isTracking = false;
@@ -94,96 +140,116 @@ async function stopTracking() {
 }
 
 
-// Handle tab change
+// 🔹 Handle tab change
 async function handleTabChange(tabId) {
+
   try {
+
     const tab = await chrome.tabs.get(tabId);
 
-   if (!tab || tab.url?.startsWith("chrome://")){
-    await stopTracking();
-    return;
-   }
+    if (!tab || tab.url?.startsWith("chrome://")){
+      await stopTracking();
+      return;
+    }
 
     const platform = getPlatform(tab.url);
 
     if (platform) {
 
-      // Start new tracking
       if (!isTracking) {
         startTracking(tabId, platform);
       }
 
-      // Switch tab or platform
       else if (currentTabId !== tabId || currentPlatform !== platform) {
         await stopTracking();
         startTracking(tabId, platform);
       }
 
-    } else {
+    } 
+    else {
       await stopTracking();
     }
 
-  } catch (error) {
+  } 
+  catch (error) {
     console.error("Error:", error);
   }
+
 }
 
 
 // 🔹 When user switches tabs
 chrome.tabs.onActivated.addListener((activeInfo) => {
+
   console.log("Tab activated:", activeInfo.tabId);
   handleTabChange(activeInfo.tabId);
+
 });
 
 
 // 🔹 When page URL updates
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
+
   if (changeInfo.url) {
     handleTabChange(tabId);
   }
-});
 
+});
 
 
 // 🔹 Idle detection
 chrome.idle.onStateChanged.addListener(async (state) => {
+
   console.log("Idle state:", state);
 
   if (state === "idle" || state === "locked") {
+
     console.log("🛑 User idle for 15 minutes");
     await stopTracking();
+
   }
+
 });
 
+
 // 🔹 Listen for messages from content script
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
   if (message.type === "PROBLEM_DETECTED") {
 
-    console.log("📌 Problem detected:");
+    console.log("📌 Problem detected:", message.data);
 
-    console.log(message.data);
+    // save previous problem
+    await saveProblemTime();
+
+    // start new problem timer
+    currentProblem = message.data;
+    problemStartTime = Date.now();
 
   }
 
 });
 
 
-// 🔹 Startup check (when extension loads)
+// 🔹 Startup check
 setTimeout(async () => {
+
   try {
+
     console.log("Checking active tab on startup...");
 
     const [tab] = await chrome.tabs.query({
       active: true,
-      currentWindow: true,
+      currentWindow: true
     });
 
     if (tab?.id) {
       handleTabChange(tab.id);
     }
 
-  } catch (error) {
+  }
+  catch (error) {
     console.warn("Startup tab check skipped:", error.message);
   }
+
 }, 300);
