@@ -235,3 +235,38 @@ if (platform === "geeksforgeeks") {
 
   }, 4000);
 }
+
+/* =========================
+   SOLVED DETECTION (LEETCODE)
+========================= */
+
+if (platform === "leetcode") {
+
+  let solvedAlready = false;
+
+  const solvedObserver = new MutationObserver(() => {
+
+    if (solvedAlready) return;
+
+    const pageText = document.body.innerText;
+
+    if (pageText.includes("Accepted")) {
+
+      solvedAlready = true;
+
+      console.log("✅ Problem Accepted!");
+
+      chrome.runtime.sendMessage({
+        type: "PROBLEM_SOLVED"
+      });
+
+    }
+
+  });
+
+  solvedObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+}

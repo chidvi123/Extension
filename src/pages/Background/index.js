@@ -54,6 +54,7 @@ async function saveProblemTime() {
     platform: currentPlatform,
     problem: currentProblem,
     timeSpent: problemTime,
+    solved:currentProblem?.solved || false,
     timestamp: Date.now()
   });
 
@@ -223,8 +224,19 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
     await saveProblemTime();
 
     // start new problem timer
-    currentProblem = message.data;
+    currentProblem ={
+      ...message.data,
+      solved:false
+    };
     problemStartTime = Date.now();
+
+    if(message.type==="PROBLEM_SOLVED"){
+      console.log("✅ Problem solved");
+    }
+
+    if(currentProblem){
+      currentProblem.solved=true;
+    }
 
   }
 
