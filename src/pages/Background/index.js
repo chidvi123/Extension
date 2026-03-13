@@ -38,9 +38,13 @@ async function saveProblemTime() {
   const problemTime = Math.floor((Date.now() - problemStartTime) / 1000);
 
   if (problemTime < 10){
-    console.log("Ignored short problem visit");
-    return;
-  } 
+  console.log("Ignored short problem visit");
+
+  currentProblem = null;
+  problemStartTime = null;
+
+  return;
+}
 
   console.log("🧩 Problem session ended:", problemTime);
 
@@ -220,28 +224,29 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
     console.log("📌 Problem detected:", message.data);
 
-    // save previous problem
     await saveProblemTime();
 
-    // start new problem timer
-    currentProblem ={
+    currentProblem = {
       ...message.data,
-      solved:false
+      solved: false
     };
+
     problemStartTime = Date.now();
+  }
 
-    if(message.type==="PROBLEM_SOLVED"){
-      console.log("✅ Problem solved");
+  if (message.type === "PROBLEM_SOLVED") {
+
+    console.log("✅ Problem solved");
+
+    if (currentProblem) {
+      currentProblem.solved = true;
     }
 
-    if(currentProblem){
-      currentProblem.solved=true;
-    }
+    await saveProblemTime();
 
   }
 
 });
-
 
 // 🔹 Startup check
 setTimeout(async () => {

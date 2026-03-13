@@ -1,6 +1,17 @@
 console.log("Content script loaded");
 
 /* =========================
+   PREVENT MULTIPLE RUNS
+========================= */
+
+if (window.__DSA_EXTENSION_ACTIVE__) {
+  console.log("Content script already running");
+} else {
+  window.__DSA_EXTENSION_ACTIVE__ = true;
+}
+
+
+/* =========================
    PLATFORM DETECTION
 ========================= */
 
@@ -34,7 +45,6 @@ function getProblemTitleFromURL() {
 
   if (!slug) return null;
 
-  // remove trailing numbers (GFG issue)
   slug = slug.replace(/[0-9]+$/, "");
 
   const title = slug
@@ -94,14 +104,13 @@ function getLeetCodeTopics() {
 
 
 /* =========================
-   GFG TOPICS (OPEN DROPDOWN)
+   GFG TOPICS
 ========================= */
 
 function getGFGTopics() {
 
   const topics = [];
 
-  // find the "Topic Tags" header
   const headers = document.querySelectorAll("strong");
 
   let topicHeader = null;
@@ -114,19 +123,16 @@ function getGFGTopics() {
 
   if (!topicHeader) return topics;
 
-  // find the accordion container
   const accordion = topicHeader.closest('[class*="accordion"]');
 
   if (!accordion) return topics;
 
-  // open dropdown if closed
   const dropdownBtn = accordion.querySelector("button");
 
   if (dropdownBtn) {
     dropdownBtn.click();
   }
 
-  // wait for tags to render
   const tagElements = accordion.querySelectorAll("a, span");
 
   tagElements.forEach(el => {
@@ -149,8 +155,9 @@ function getGFGTopics() {
   return topics;
 }
 
+
 /* =========================
-   LEETCODE DATA
+   EXTRACT PROBLEM DATA
 ========================= */
 
 function extractLeetCodeProblemData() {
@@ -171,11 +178,6 @@ function extractLeetCodeProblemData() {
     url
   };
 }
-
-
-/* =========================
-   GFG DATA
-========================= */
 
 function extractGFGProblemData() {
 
@@ -198,8 +200,10 @@ function extractGFGProblemData() {
 
 
 /* =========================
-   MAIN LOGIC
+   SEND PROBLEM DETECTED
 ========================= */
+
+//MAIN LOGIC
 
 const platform = getCurrentPlatform();
 
@@ -210,13 +214,16 @@ if (platform === "leetcode") {
     const problemData = extractLeetCodeProblemData();
 
     if (problemData) {
+
       chrome.runtime.sendMessage({
         type: "PROBLEM_DETECTED",
         data: problemData
       });
+
     }
 
   }, 4000);
+
 }
 
 
@@ -227,14 +234,18 @@ if (platform === "geeksforgeeks") {
     const problemData = extractGFGProblemData();
 
     if (problemData) {
+
       chrome.runtime.sendMessage({
         type: "PROBLEM_DETECTED",
         data: problemData
       });
+
     }
 
   }, 4000);
+
 }
+
 
 /* =========================
    SOLVED DETECTION (LEETCODE)
@@ -243,18 +254,79 @@ if (platform === "geeksforgeeks") {
 if (platform === "leetcode") {
 
   let solvedAlready = false;
+  let submitClicked = false;
+
+  document.addEventListener("click", (e) => {
+
+    const submitButton = e.target.closest(
+      'button[data-e2e-locator="console-submit-button"]'
+    );
+
+    if (submitButton) {
+      console.log("Submit clicked");
+      submitClicked = true;
+    }
+
+  });
 
   const solvedObserver = new MutationObserver(() => {
 
     if (solvedAlready) return;
 
-    const pageText = document.body.innerText;
+    const resultElement = document.querySelector(
+      '[data-e2e-locator="submission-result"]'
+    );
 
-    if (pageText.includes("Accepted")) {
+    if (!resultElement) return;
+
+    const resultText = resultElement.innerText.toLowerCase();
+
+    if (submitClicked && resultText.includes("accepted")) {
 
       solvedAlready = true;
 
       console.log("✅ Problem Accepted!");
+
+      chrome.runtime.sendMessage({
+        type: "PROBLEM_SOLVED"
+      });
+
+      submitClicked = false;
+
+    }
+
+  });
+
+  solvedObserver.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+}
+
+
+/* =========================
+   SOLVED DETECTION (GFG)
+========================= */
+
+if (platform === "geeksforgeeks") {
+
+  let solvedAlready = false;
+
+  const solvedObserver = new MutationObserver(() => {
+
+    if (solvedAlready) return;
+
+    const pageText = document.body.innerText.toLowerCase();
+
+    if (
+      pageText.includes("problem solved successfully") ||
+      pageText.includes("correct answer")
+    ) {
+
+      solvedAlready = true;
+
+      console.log("✅ GFG Problem Solved!");
 
       chrome.runtime.sendMessage({
         type: "PROBLEM_SOLVED"
