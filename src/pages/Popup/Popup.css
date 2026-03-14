@@ -111,6 +111,40 @@ body { min-width: 400px; }
 }
 
 /* =====================================================
+   RANGE SELECTOR (Day | Week | Month)
+===================================================== */
+
+.range-selector {
+  display: flex;
+  gap: 8px;
+  padding: 0 16px 12px;
+}
+
+.range-selector button {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text2);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.range-selector button:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.range-selector button.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* =====================================================
    CARD  –  every section sits inside one of these
    ===================================================== */
 
