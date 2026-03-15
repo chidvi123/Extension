@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* =====================================
+   BASE
+===================================== */
+
+body {
+  margin: 0;
+  background: #0f1117;
+  color: #f1f5f9;
+  font-family: 'Inter', sans-serif;
+}
+
+/* =====================================
+   MAIN PAGE LAYOUT
+===================================== */
+
+.analytics {
+  max-width: 900px;
+  margin: auto;
+  padding: 40px 24px;
+}
+
+.analytics h1 {
+  font-size: 28px;
+  font-weight: 700;
+  margin-bottom: 30px;
+}
+
+/* =====================================
+   ANALYTICS CARDS
+===================================== */
+
+.card {
+  background: #1a1f2e;
+  border: 1px solid #252d3d;
+  border-radius: 14px;
+  padding: 22px;
+  margin-bottom: 24px;
+}
+
+.card h2 {
+  font-size: 18px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+/* =====================================
+   WEAK TOPIC
+===================================== */
+
+.weak-topic {
+  background: #111827;
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+
+.weak-topic p {
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.weak-topic strong {
+  color: #f59e0b;
+  font-weight: 600;
+}
+
+/* =====================================
+   ACTIVITY CHART
+===================================== */
+
+.activity-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 140px;
+  margin-top: 10px;
+}
+
+/* Individual day bar */
+
+.activity-bar {
+  width: 10px;
+  background: #6c8aff;
+  border-radius: 4px 4px 0 0;
+  transition: height 0.25s ease, background 0.2s ease;
+}
+
+/* Hover effect */
+
+.activity-bar:hover {
+  background: #8aa2ff;
+}
+
+/* =====================================
+   EMPTY MESSAGE
+===================================== */
+
+.card p {
+  font-size: 14px;
+  color: #b0bdd0;
+}

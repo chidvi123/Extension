@@ -421,26 +421,33 @@ body { min-width: 400px; }
 }
 
 /* =====================================================
-   RESET BUTTON
-   ===================================================== */
+   VIEW FULL ANALYTICS BUTTON
+===================================================== */
 
-.footer { padding: 4px 10px 10px; }
+.analytics-btn {
+  width: 60%;              /* decrease width */
+  margin: 8px auto 0;      /* center horizontally */
 
-.reset-btn {
-  width: 100%;
+  display: block;          /* required for auto margin centering */
+
   padding: 13px;
-  background: var(--card);
-  border: 1px solid var(--border);
+  background: var(--accent);
+  border: none;
   border-radius: 12px;
-  color: var(--text2);
+  color: white;
   font-family: 'Inter', sans-serif;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
-  transition: border-color 0.2s, color 0.2s;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
 }
 
-.reset-btn:hover {
-  border-color: #ef4444;
-  color: #ef4444;
+.analytics-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+
+.analytics-btn:active {
+  transform: translateY(0);
+  box-shadow: none;
 }

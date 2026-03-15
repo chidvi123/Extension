@@ -3,9 +3,6 @@ import "./Popup.css";
 
 /* ---------------------------------------------------------
    Utility: Convert seconds into readable time
-   Example:
-   3660 → "1h 1m"
-   120  → "2m 0s"
 ---------------------------------------------------------- */
 function formatTime(sec) {
   const h = Math.floor(sec / 3600);
@@ -15,25 +12,31 @@ function formatTime(sec) {
   return h > 0 ? `${h}h ${m}m` : `${m}m ${s}s`;
 }
 
-/*-----------------------------------------------------------*/
-function computeStreak(data){
-  const keys=Object.keys(data);
+/* ---------------------------------------------------------
+   Compute streak
+---------------------------------------------------------- */
+function computeStreak(data) {
+  const keys = Object.keys(data);
 
-  const today=new Date();
+  const today = new Date();
+  const todayKey = today.toISOString().split("T")[0];
 
-  let count=0;
+  let count = 0;
+  let startOffset = 0;
 
-  for(let i=0;i<365;i++){
-    const date=new Date(today);
+  if (!keys.includes(todayKey)) {
+    startOffset = 1;
+  }
 
-    date.setDate(today.getDate()-i);
+  for (let i = startOffset; i < 365; i++) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
 
-    const key=date.toISOString().split("T")[0];
+    const key = date.toISOString().split("T")[0];
 
-    if(keys.includes(key)){
+    if (keys.includes(key)) {
       count++;
-    }
-    else{
+    } else {
       break;
     }
   }
@@ -43,9 +46,6 @@ function computeStreak(data){
 
 /* ---------------------------------------------------------
    Empty analytics structure
-   Used:
-   - initial state
-   - after reset
 ---------------------------------------------------------- */
 const EMPTY = {
   totalCodingTime: 0,
@@ -73,93 +73,58 @@ const EMPTY = {
 
 export default function Popup() {
 
-  /* ---------------------------------------------------------
-     STATES
-  ---------------------------------------------------------- */
-
   const [stats, setStats] = useState(EMPTY);
-
   const [animated, setAnimated] = useState(false);
-
   const [dark, setDark] = useState(true);
-
-  /* NEW: Range filter (day | week | month) */
   const [range, setRange] = useState("day");
+  const [streak, setStreak] = useState(0);
 
-  const [streak,setStreak]=useState(0);
-
-  /* Prevent animation running multiple times */
   const hasAnimated = useRef(false);
 
-
-
   /* ---------------------------------------------------------
-     Load saved theme from chrome storage
+     Load saved theme
   ---------------------------------------------------------- */
-
   useEffect(() => {
-
     chrome.storage.local.get("theme", (res) => {
-
       if (res.theme === "light") {
         setDark(false);
       }
-
     });
-
   }, []);
 
-
-
   /* ---------------------------------------------------------
-     LOAD ANALYTICS DATA
-     This recomputes analytics whenever range changes
+     Load analytics data
   ---------------------------------------------------------- */
-
   useEffect(() => {
 
-    /* Get ALL stored keys */
     chrome.storage.local.get(null, (data) => {
 
-      const currentStreak=computeStreak(data);
+      const currentStreak = computeStreak(data);
       setStreak(currentStreak);
 
       const now = new Date();
-
       const sessions = [];
-
-      
-      /* ---------------------------------------------------
-         Filter sessions depending on selected range
-      ---------------------------------------------------- */
 
       Object.keys(data).forEach((dateKey) => {
 
         const date = new Date(dateKey);
-
-        const diffDays =
-          (now - date) / (1000 * 60 * 60 * 24);
+        const diffDays = (now - date) / (1000 * 60 * 60 * 24);
 
         if (range === "day") {
 
-          const todayKey =
-            now.toISOString().split("T")[0];
+          const todayKey = now.toISOString().split("T")[0];
 
           if (dateKey === todayKey) {
             sessions.push(...data[dateKey]);
           }
 
-        }
-
-        else if (range === "week") {
+        } else if (range === "week") {
 
           if (diffDays <= 7) {
             sessions.push(...data[dateKey]);
           }
 
-        }
-
-        else if (range === "month") {
+        } else if (range === "month") {
 
           if (diffDays <= 30) {
             sessions.push(...data[dateKey]);
@@ -169,17 +134,10 @@ export default function Popup() {
 
       });
 
-
-
-      /* ---------------------------------------------------
-         Recompute analytics from filtered sessions
-      ---------------------------------------------------- */
-
       const s = structuredClone(EMPTY);
 
       sessions.forEach((record) => {
 
-        /* PLATFORM TIME */
         if (record.type === "platform") {
 
           s.totalCodingTime += record.duration;
@@ -194,7 +152,6 @@ export default function Popup() {
 
         }
 
-        /* SOLVED PROBLEMS */
         if (record.type === "problem" && record.solved) {
 
           s.totalProblems++;
@@ -207,14 +164,12 @@ export default function Popup() {
             s.problemPlatform.geeksforgeeks++;
           }
 
-          /* Difficulty Distribution */
           const diff = record.problem?.difficulty;
 
           if (diff in s.difficulty) {
             s.difficulty[diff]++;
           }
 
-          /* Topic Counting */
           (record.problem?.topics || []).forEach((t) => {
             s.topics[t] = (s.topics[t] || 0) + 1;
           });
@@ -223,34 +178,23 @@ export default function Popup() {
 
       });
 
-
-
-      /* Save computed analytics to state */
       setStats(s);
 
-
-
-      /* Run chart animation once */
       if (!hasAnimated.current) {
-
         hasAnimated.current = true;
 
         setTimeout(() => {
           setAnimated(true);
         }, 100);
-
       }
 
     });
 
-  }, [range]);   // IMPORTANT: recompute when range changes
-
-
+  }, [range]);
 
   /* ---------------------------------------------------------
      Toggle theme
   ---------------------------------------------------------- */
-
   function toggleTheme() {
 
     const next = !dark;
@@ -263,30 +207,8 @@ export default function Popup() {
 
   }
 
-
-
   /* ---------------------------------------------------------
-     Reset all stored analytics
-  ---------------------------------------------------------- */
-
-  function resetData() {
-
-    chrome.storage.local.clear(() => {
-
-      setStats(EMPTY);
-
-      setAnimated(false);
-
-      setTimeout(() => setAnimated(true), 100);
-
-    });
-
-  }
-
-
-
-  /* ---------------------------------------------------------
-     Derived values used in charts
+     Derived values
   ---------------------------------------------------------- */
 
   const totalPlatform =
@@ -298,11 +220,9 @@ export default function Popup() {
 
   const topicList =
     Object.entries(stats.topics)
-      .sort((a, b) => b[1] - a[1]);
+      .sort((a, b) => b[1] - a[1])
+      .slice(0,5);
 
-
-
-  /* Date label */
   const dateStr =
     range === "day"
       ? new Date().toLocaleDateString("en-US", {
@@ -314,9 +234,6 @@ export default function Popup() {
       ? "Last 7 Days"
       : "Last 30 Days";
 
-
-
-  /* Platform bar percentages */
   const lcPct = animated
     ? `${(stats.platformTime.leetcode / totalPlatform) * 100}%`
     : "0%";
@@ -325,42 +242,30 @@ export default function Popup() {
     ? `${(stats.platformTime.geeksforgeeks / totalPlatform) * 100}%`
     : "0%";
 
-
-
   function diffPct(key) {
-
     return animated
       ? `${(stats.difficulty[key] / maxDiff) * 100}%`
       : "0%";
-
   }
 
-
-
   /* ---------------------------------------------------------
-     RENDER UI
+     UI
   ---------------------------------------------------------- */
 
   return (
     <div className={`popup ${dark ? "dark" : "light"}`}>
 
-
-
       {/* HEADER */}
       <div className="header">
 
         <div className="header-left">
-
           <div>
             <h1 className="title">Coding Tracker</h1>
-
             <p className="subtitle">
               Track your daily coding productivity
             </p>
           </div>
-
         </div>
-
 
         <div className="header-right">
 
@@ -380,12 +285,8 @@ export default function Popup() {
 
       </div>
 
-
-
       {/* DATE */}
       <p className="date">{dateStr}</p>
-
-
 
       {/* RANGE SELECTOR */}
       <div className="range-selector">
@@ -413,9 +314,7 @@ export default function Popup() {
 
       </div>
 
-
-
-      {/* CODING TIME CARD */}
+      {/* CODING TIME */}
       <div className="card">
 
         <h2 className="card-title">🕐 Coding Time</h2>
@@ -432,9 +331,6 @@ export default function Popup() {
 
         </div>
 
-
-
-        {/* LEETCODE */}
         <div className="platform-row">
           <span className="dot orange" />
           LeetCode
@@ -450,9 +346,6 @@ export default function Popup() {
           />
         </div>
 
-
-
-        {/* GFG */}
         <div className="platform-row top-gap">
           <span className="dot green" />
           GeeksforGeeks
@@ -470,14 +363,10 @@ export default function Popup() {
 
       </div>
 
-
-
-      {/* PROBLEMS SOLVED */}
+      {/* PROBLEMS */}
       <div className="card">
 
-        <h2 className="card-title">
-          📖 Problems Solved
-        </h2>
+        <h2 className="card-title">📖 Problems Solved</h2>
 
         <div className="prob-grid">
 
@@ -506,9 +395,7 @@ export default function Popup() {
 
       </div>
 
-
-
-      {/* DIFFICULTY CHART */}
+      {/* DIFFICULTY */}
       <div className="card">
 
         <h2 className="card-title">
@@ -531,7 +418,6 @@ export default function Popup() {
             ))}
 
           </div>
-
 
           <div className="chart-bars">
 
@@ -561,9 +447,7 @@ export default function Popup() {
 
       </div>
 
-
-
-      {/* TOP TOPICS */}
+      {/* TOPICS */}
       <div className="card">
 
         <h2 className="card-title">
@@ -585,21 +469,15 @@ export default function Popup() {
 
       </div>
 
-
-
-      {/* RESET */}
-      <div className="footer">
-
-        <button
-          className="reset-btn"
-          onClick={resetData}
-        >
-          ↺ Reset Data
-        </button>
-
-      </div>
-
-
+      {/*Analytics Button*/}
+      <button className="analytics-btn"
+      onClick={() =>
+        chrome.tabs.create({
+          url:chrome.runtime.getURL("analytics.html")
+        })
+      }>
+       📊 View Full Analytics
+      </button>
 
     </div>
   );
