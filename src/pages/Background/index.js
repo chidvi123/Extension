@@ -105,7 +105,7 @@ async function stopTracking() {
     return;
   }
 
-  console.log("🔴 Tracking stopped");
+  console.log("🔴 Tracking stopped 🔴");
   console.log("Platform:", currentPlatform);
   console.log("Session time (seconds):", duration);
 
