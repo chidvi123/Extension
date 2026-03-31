@@ -81,6 +81,95 @@ export default function Popup() {
 
   const hasAnimated = useRef(false);
 
+  // 🔽 ADD THIS EXACTLY HERE
+function loadDataFromStorage() {
+
+  chrome.storage.local.get(null, (data) => {
+
+    const currentStreak = computeStreak(data);
+    setStreak(currentStreak);
+
+    const now = new Date();
+    const sessions = [];
+
+    Object.keys(data).forEach((dateKey) => {
+
+      const date = new Date(dateKey);
+      const diffDays = (now - date) / (1000 * 60 * 60 * 24);
+
+      if (range === "day") {
+
+        const todayKey = now.toISOString().split("T")[0];
+
+        if (dateKey === todayKey) {
+          sessions.push(...data[dateKey]);
+        }
+
+      } else if (range === "week") {
+
+        if (diffDays <= 7) {
+          sessions.push(...data[dateKey]);
+        }
+
+      } else if (range === "month") {
+
+        if (diffDays <= 30) {
+          sessions.push(...data[dateKey]);
+        }
+
+      }
+
+    });
+
+    const s = structuredClone(EMPTY);
+
+    sessions.forEach((record) => {
+
+      if (record.type === "platform") {
+
+        s.totalCodingTime += record.duration;
+
+        if (record.platform === "leetcode") {
+          s.platformTime.leetcode += record.duration;
+        }
+
+        if (record.platform === "geeksforgeeks") {
+          s.platformTime.geeksforgeeks += record.duration;
+        }
+
+      }
+
+      if (record.type === "problem" && record.solved) {
+
+        s.totalProblems++;
+
+        if (record.platform === "leetcode") {
+          s.problemPlatform.leetcode++;
+        }
+
+        if (record.platform === "geeksforgeeks") {
+          s.problemPlatform.geeksforgeeks++;
+        }
+
+        const diff = record.problem?.difficulty;
+
+        if (diff in s.difficulty) {
+          s.difficulty[diff]++;
+        }
+
+        (record.problem?.topics || []).forEach((t) => {
+          s.topics[t] = (s.topics[t] || 0) + 1;
+        });
+
+      }
+
+    });
+
+    setStats(s);
+
+  });
+}
+
   /* ---------------------------------------------------------
      Load saved theme
   ---------------------------------------------------------- */
@@ -192,6 +281,23 @@ export default function Popup() {
 
   }, [range]);
 
+  // 🔽 ADD THIS EXACTLY HERE
+useEffect(() => {
+
+  function handleUpdate(message) {
+    if (message.type === "DATA_UPDATED") {
+      loadDataFromStorage();
+    }
+  }
+
+  chrome.runtime.onMessage.addListener(handleUpdate);
+
+  return () => {
+    chrome.runtime.onMessage.removeListener(handleUpdate);
+  };
+
+}, [range]);
+
   /* ---------------------------------------------------------
      Toggle theme
   ---------------------------------------------------------- */
@@ -268,6 +374,13 @@ export default function Popup() {
         </div>
 
         <div className="header-right">
+
+            <button
+              className="theme-btn"
+              onClick={loadDataFromStorage}
+            >
+            🔄
+            </button>
 
           <div className="streak">
             <span>🔥</span>

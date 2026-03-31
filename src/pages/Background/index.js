@@ -12,11 +12,39 @@ let currentProblem = null;
 let problemStartTime = null;
 
 
+// 🔽 RESTORE STATE
+chrome.storage.local.get("trackingState", (res) => {
+  const state = res.trackingState;
+
+  if (state && state.isTracking) {
+    console.log("♻️ Restoring tracking state");
+
+    isTracking = state.isTracking;
+    startTime = state.startTime;
+    currentPlatform = state.currentPlatform;
+    currentTabId = state.currentTabId;
+  }
+});
+
+
 // 🔹 Get today's date key
 function getTodayKey(){
   const today = new Date();
   return today.toISOString().split("T")[0];
 }
+
+function notifyDataUpdated() {
+  chrome.runtime.sendMessage(
+    { type: "DATA_UPDATED" },
+    () => chrome.runtime.lastError
+  );
+}
+
+
+// 🔽 ALARM
+chrome.alarms.create("trackProgress", {
+  periodInMinutes: 0.1
+});
 
 
 // 🔹 Detect platform
@@ -38,13 +66,12 @@ async function saveProblemTime() {
   const problemTime = Math.floor((Date.now() - problemStartTime) / 1000);
 
   if (problemTime < 10){
-  console.log("Ignored short problem visit");
+    console.log("Ignored short problem visit");
 
-  currentProblem = null;
-  problemStartTime = null;
-
-  return;
-}
+    currentProblem = null;
+    problemStartTime = null;
+    return;
+  }
 
   console.log("🧩 Problem session ended:", problemTime);
 
@@ -58,13 +85,13 @@ async function saveProblemTime() {
     platform: currentPlatform,
     problem: currentProblem,
     timeSpent: problemTime,
-    solved:currentProblem?.solved || false,
+    solved: currentProblem?.solved || false,
     timestamp: Date.now()
   });
 
-  await chrome.storage.local.set({
-    [todayKey]: sessions
-  });
+  await chrome.storage.local.set({ [todayKey]: sessions });
+
+  notifyDataUpdated();
 
   currentProblem = null;
   problemStartTime = null;
@@ -82,6 +109,15 @@ function startTracking(tabId, platform) {
   currentTabId = tabId;
   currentPlatform = platform;
   startTime = Date.now();
+
+  chrome.storage.local.set({
+    trackingState: {
+      isTracking: true,
+      startTime,
+      currentPlatform,
+      currentTabId
+    }
+  });
 
   console.log("🟢 Tracking started on", platform);
 }
@@ -106,123 +142,90 @@ async function stopTracking() {
   }
 
   console.log("🔴 Tracking stopped 🔴");
-  console.log("Platform:", currentPlatform);
-  console.log("Session time (seconds):", duration);
 
-  // save problem time
   await saveProblemTime();
 
   const todayKey = getTodayKey();
 
-  try{
+  const result = await chrome.storage.local.get(todayKey);
+  const sessions = result[todayKey] || [];
 
-    const result = await chrome.storage.local.get(todayKey);
-    const sessions = result[todayKey] || [];
+  sessions.push({
+    type: "platform",
+    platform: currentPlatform,
+    start: startTime,
+    end: endTime,
+    duration: duration
+  });
 
-    sessions.push({
-      type: "platform",
-      platform: currentPlatform,
-      start: startTime,
-      end: endTime,
-      duration: duration
-    });
+  await chrome.storage.local.set({ [todayKey]: sessions });
 
-    await chrome.storage.local.set({
-      [todayKey]: sessions
-    });
-
-    console.log("Session stored", sessions);
-
-  }
-  catch(error){
-    console.error("Storage error", error);
-  }
+  notifyDataUpdated();
 
   isTracking = false;
   startTime = null;
   currentTabId = null;
   currentPlatform = null;
+
+  chrome.storage.local.remove("trackingState");
 }
 
 
 // 🔹 Handle tab change
 async function handleTabChange(tabId) {
 
-  try {
+  const tab = await chrome.tabs.get(tabId);
 
-    const tab = await chrome.tabs.get(tabId);
-
-    if (!tab || tab.url?.startsWith("chrome://")){
-      await stopTracking();
-      return;
-    }
-
-    const platform = getPlatform(tab.url);
-
-    if (platform) {
-
-      if (!isTracking) {
-        startTracking(tabId, platform);
-      }
-
-      else if (currentTabId !== tabId || currentPlatform !== platform) {
-        await stopTracking();
-        startTracking(tabId, platform);
-      }
-
-    } 
-    else {
-      await stopTracking();
-    }
-
-  } 
-  catch (error) {
-    console.error("Error:", error);
+  if (!tab || tab.url?.startsWith("chrome://")){
+    await stopTracking();
+    return;
   }
 
+  const platform = getPlatform(tab.url);
+
+  if (platform) {
+
+    if (!isTracking) {
+      startTracking(tabId, platform);
+    }
+
+    else if (currentTabId !== tabId || currentPlatform !== platform) {
+      await stopTracking();
+      startTracking(tabId, platform);
+    }
+
+  } else {
+    await stopTracking();
+  }
 }
 
 
-// 🔹 When user switches tabs
+// 🔹 Tab switch
 chrome.tabs.onActivated.addListener((activeInfo) => {
-
-  console.log("Tab activated:", activeInfo.tabId);
   handleTabChange(activeInfo.tabId);
-
 });
 
 
-// 🔹 When page URL updates
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-
+// 🔹 URL change
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
   if (changeInfo.url) {
     handleTabChange(tabId);
   }
-
 });
 
 
-// 🔹 Idle detection
+// 🔹 Idle
 chrome.idle.onStateChanged.addListener(async (state) => {
-
-  console.log("Idle state:", state);
-
   if (state === "idle" || state === "locked") {
-
-    console.log("🛑 User idle for 15 minutes");
     await stopTracking();
-
   }
-
 });
 
 
-// 🔹 Listen for messages from content script
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+// 🔹 Content script messages
+chrome.runtime.onMessage.addListener(async (message) => {
 
   if (message.type === "PROBLEM_DETECTED") {
-
-    console.log("📌 Problem detected:", message.data);
 
     await saveProblemTime();
 
@@ -236,37 +239,90 @@ chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
 
   if (message.type === "PROBLEM_SOLVED") {
 
-    console.log("✅ Problem solved");
-
     if (currentProblem) {
       currentProblem.solved = true;
     }
 
     await saveProblemTime();
-
   }
 
 });
 
-// 🔹 Startup check
+
+// 🔹 STARTUP
 setTimeout(async () => {
 
-  try {
+  const [tab] = await chrome.tabs.query({
+    active: true,
+    currentWindow: true
+  });
 
-    console.log("Checking active tab on startup...");
-
-    const [tab] = await chrome.tabs.query({
-      active: true,
-      currentWindow: true
-    });
-
-    if (tab?.id) {
-      handleTabChange(tab.id);
-    }
-
-  }
-  catch (error) {
-    console.warn("Startup tab check skipped:", error.message);
+  if (tab?.id) {
+    handleTabChange(tab.id);
   }
 
 }, 300);
+
+
+// 🔥 ALARM HANDLER (FIXED)
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+
+  if (alarm.name !== "trackProgress") return;
+
+  const res = await chrome.storage.local.get("trackingState");
+  const state = res.trackingState;
+
+  if (!state || !state.isTracking) return;
+
+  const [activeTab] = await chrome.tabs.query({
+  active: true,
+  currentWindow: true
+  });
+
+  const platform = getPlatform(activeTab?.url);
+  if (!platform) return;
+
+  isTracking = true;
+  startTime = state.startTime;
+  currentPlatform = state.currentPlatform;
+  currentTabId = state.currentTabId;
+
+  const now = Date.now();
+  let duration = Math.floor((now - startTime) / 1000);
+
+  // 🔥 FIX: prevent jumps
+  duration = Math.min(duration, 8);
+
+  if (duration < 2) return;
+
+  const todayKey = getTodayKey();
+
+  const result = await chrome.storage.local.get(todayKey);
+  const sessions = result[todayKey] || [];
+
+  sessions.push({
+    type: "platform",
+    platform: currentPlatform,
+    start: startTime,
+    end: now,
+    duration: duration
+  });
+
+  await chrome.storage.local.set({ [todayKey]: sessions });
+
+  console.log("⏱️ Auto progress saved");
+
+  startTime = now;
+
+  // 🔥 UPDATE STORAGE STATE
+  chrome.storage.local.set({
+    trackingState: {
+      isTracking: true,
+      startTime,
+      currentPlatform,
+      currentTabId
+    }
+  });
+
+  notifyDataUpdated();
+});
