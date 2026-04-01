@@ -1,82 +1,117 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
 /* =====================================================
-   THEME VARIABLES — edit colors here only
+   THEME VARIABLES
    ===================================================== */
 
 .analytics.dark {
-  --bg:           #0f1117;
-  --card:         #1a1f2e;
-  --border:       #252d3d;
-  --text:         #f1f5f9;
-  --text2:        #b0bdd0;
-  --text3:        #7a8a9e;
-  --accent:       #6c8aff;
-  --track:        #252d3d;
-  --input-bg:     #111827;
-  --input-border: #252d3d;
+  --bg: #0d1117;
+  --card: #161b27;
+  --card2: #1c2333;
+  --border: #21293d;
+  --text: #e6edf3;
+  --text2: #8b949e;
+  --text3: #484f58;
+  --accent: #58a6ff;
+  --accent2: #3fb950;
+  --track: #21293d;
+  --input-bg: #0d1117;
+  --input-border: #21293d;
 }
 
 .analytics.light {
-  --bg:           #f0f2f8;
-  --card:         #ffffff;
-  --border:       #e2e8f0;
-  --text:         #1a202c;
-  --text2:        #4a5568;
-  --text3:        #a0aec0;
-  --accent:       #5b73e8;
-  --track:        #e2e8f0;
-  --input-bg:     #f8f9fc;
-  --input-border: #d1d9e0;
+  --bg: #f3f6fc;
+  --card: #ffffff;
+  --card2: #f6f8ff;
+  --border: #d8dee6;
+  --text: #1c2128;
+  --text2: #57606a;
+  --text3: #a8b1ba;
+  --accent: #0969da;
+  --accent2: #1a7f37;
+  --track: #e6eaef;
+  --input-bg: #f6f8fa;
+  --input-border: #d0d7de;
 }
 
 /* =====================================================
-   BASE
+   RESET & BASE
    ===================================================== */
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
-
-body {
-  font-family: 'Inter', sans-serif;
-  width: 100%;
-  min-width: 0;
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Full width — no max-width constraint */
-.analytics {
+html,
+body,
+#root {
   width: 100%;
-  min-height: 100vh;
-  padding: 32px 40px 60px;
-  background: var(--bg);
-  color: var(--text);
-  transition: background 0.25s, color 0.25s;
+  height: 100%;
+  overflow: hidden;
+  /* NO scroll at all */
+}
+
+body {
+  font-family: 'DM Sans', sans-serif;
 }
 
 /* =====================================================
-   PAGE HEADER
+   ROOT CONTAINER — fills viewport exactly
+   ===================================================== */
+
+.analytics {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 14px 18px 12px;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  transition: background 0.2s, color 0.2s;
+  gap: 10px;
+}
+
+/* =====================================================
+   HEADER
    ===================================================== */
 
 .page-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 28px;
+  flex-shrink: 0;
+  height: 36px;
 }
 
 .page-title {
-  font-size: 26px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--text);
+  letter-spacing: -0.3px;
+}
+
+.title-icon {
+  font-size: 20px;
+  color: var(--accent);
+  line-height: 1;
 }
 
 .theme-toggle {
-  padding: 9px 18px;
-  font-family: 'Inter', sans-serif;
-  font-size: 13px;
+  padding: 6px 14px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 12px;
   font-weight: 600;
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   color: var(--text2);
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
@@ -88,225 +123,332 @@ body {
 }
 
 /* =====================================================
+   DASHBOARD GRID
+   4 columns, 2 rows — fills all remaining height
+   ===================================================== */
+
+.dashboard-grid {
+  flex: 1;
+  /* takes all height below header */
+  display: grid;
+  /* 4 equal columns */
+  grid-template-columns: 160px 160px 1fr 1fr;
+  /* 2 rows: heatmap row slightly taller */
+  grid-template-rows: 1fr 1fr;
+  gap: 10px;
+  min-height: 0;
+  /* critical — prevents grid from overflowing */
+}
+
+/* ── ROW 1 assignments ── */
+
+/* Stat pair spans col 1+2, row 1 */
+.stat-pair {
+  grid-column: 1 / 3;
+  grid-row: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Heatmap spans col 3+4, row 1 */
+.heatmap-card {
+  grid-column: 3 / 5;
+  grid-row: 1;
+  overflow: hidden;
+}
+
+/* ── ROW 2 assignments ── */
+
+/* Platform usage: col 1+2, row 2 */
+.platform-card {
+  grid-column: 1 / 3;
+  grid-row: 2;
+}
+
+/* Pie chart: col 3, row 2 */
+.pie-card {
+  grid-column: 3;
+  grid-row: 2;
+}
+
+/* Weak topics: col 4, row 2 */
+.weak-card {
+  grid-column: 4;
+  grid-row: 2;
+}
+
+/* =====================================================
    CARDS
    ===================================================== */
 
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 22px;
-  transition: background 0.25s, border-color 0.25s;
+  border-radius: 12px;
+  padding: 14px 16px;
+  overflow: hidden;
+  min-height: 0;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .card-title {
-  font-size: 15px;
+  font-size: 12px;
   font-weight: 600;
-  color: var(--text);
-  margin-bottom: 16px;
+  color: var(--text2);
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 /* =====================================================
-   ROW 1 — 2 stat cards + heatmap (fills remaining width)
+   STAT CARDS
    ===================================================== */
-
-.row-1 {
-  display: grid;
-  grid-template-columns: 200px 200px 1fr;
-  gap: 16px;
-  margin-bottom: 16px;
-  align-items: stretch;
-}
 
 .stat-card {
   position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;  /* number sits at bottom */
-  padding: 24px 22px 22px;
-  min-height: 140px;
+  justify-content: flex-end;
+  padding: 14px 16px;
+  min-height: 0;
 }
 
-/* ⓘ icon — top right corner */
 .stat-info-icon {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  font-size: 16px;
-  color: var(--border);
+  top: 12px;
+  right: 12px;
+  font-size: 13px;
+  color: var(--text3);
   line-height: 1;
   user-select: none;
 }
 
-/* Label — sits above the number */
 .stat-card .stat-lbl {
-  font-size: 14px;
+  font-size: 11px;
   font-weight: 600;
   color: var(--text2);
-  margin-bottom: 10px;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
 }
 
-/* Big number */
 .stat-card .stat-val {
-  font-size: 52px;
+  font-size: 42px;
   font-weight: 700;
   color: var(--text);
   line-height: 1;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
+  font-family: 'DM Mono', monospace;
 }
 
 /* =====================================================
-   ROW 2 — left col (platform + difficulty) | right col (weak topics)
+   PLATFORM USAGE
    ===================================================== */
-
-.row-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-  align-items: start;
-}
-
-/* Left: platform usage card on top, difficulty card below */
-.col-left {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-/* Right: weak topics fills the full height of both left cards */
-.col-right {
-  display: flex;
-  flex-direction: column;
-}
-
-.col-right .card {
-  flex: 1;
-}
-
 
 .platform-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 7px;
+  margin-bottom: 5px;
 }
 
-.top-gap { margin-top: 16px; }
-.p-name  { font-size: 13px; font-weight: 500; color: var(--text2); }
-.p-pct   { font-size: 13px; font-weight: 600; color: var(--text); }
+.top-gap {
+  margin-top: 10px;
+}
+
+.p-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text2);
+}
+
+.p-pct {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+}
 
 .bar-track {
-  height: 10px;
+  height: 7px;
   background: var(--track);
-  border-radius: 5px;
+  border-radius: 4px;
   overflow: hidden;
 }
 
-/* width driven by inline style in JSX */
 .bar-fill {
   height: 100%;
-  border-radius: 5px;
+  border-radius: 4px;
   transition: width 1s ease;
 }
 
-.bar-fill.lc     { background: #f89f1b; }
-.bar-fill.gfg    { background: #10b981; }
-.bar-fill.easy   { background: #10b981; }
-.bar-fill.medium { background: #f59e0b; }
-.bar-fill.hard   { background: #ef4444; }
+.bar-fill.lc {
+  background: #f89f1b;
+}
+
+.bar-fill.gfg {
+  background: #10b981;
+}
 
 /* =====================================================
-   PIE CHART  (PieChart.jsx)
+   PIE CHART
    ===================================================== */
 
 .pie-wrap {
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 14px;
+  height: calc(100% - 30px);
+  /* fill card minus title */
 }
 
-.pie-legend     { display: flex; flex-direction: column; gap: 12px; }
-.pie-legend-row { display: flex; align-items: center; gap: 8px; }
+.pie-wrap svg {
+  flex-shrink: 0;
+}
+
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pie-legend-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
 
 .pie-dot {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.pie-lbl { font-size: 13px; color: var(--text2); flex: 1; }
-.pie-val { font-size: 13px; font-weight: 600; color: var(--text); }
-
-/* =====================================================
-   WEAK TOPICS  (WeakTopics.jsx)
-   ===================================================== */
-
-.weak-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
-
-.weak-item {
-  background: var(--bg);
-  border-radius: 10px;
-  padding: 13px 16px;
-  border-left: 3px solid #f59e0b;
+.pie-lbl {
+  font-size: 12px;
+  color: var(--text2);
+  flex: 1;
 }
 
-.weak-name { font-size: 14px; font-weight: 600; color: #f59e0b; margin-bottom: 4px; }
-.weak-meta { font-size: 12px; color: var(--text3); }
-.empty-msg { font-size: 13px; color: var(--text3); font-style: italic; }
+.pie-val {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+}
 
 /* =====================================================
-   HEATMAP  (Heatmap.jsx)
+   WEAK TOPICS — top 5 max
    ===================================================== */
 
-.heatmap-card { overflow-x: auto; }
+.weak-card .card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
 
-.heatmap-wrap { display: flex; flex-direction: column; gap: 14px; }
+.weak-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow: hidden;
+  /* never scroll — top 5 fit */
+}
 
-/* title left, dropdown right */
+.weak-item {
+  background: var(--card2);
+  border-radius: 8px;
+  padding: 8px 11px;
+  border-left: 2px solid #f59e0b;
+  flex-shrink: 0;
+}
+
+.weak-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f59e0b;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.weak-meta {
+  font-size: 11px;
+  color: var(--text3);
+}
+
+.empty-msg {
+  font-size: 12px;
+  color: var(--text3);
+  font-style: italic;
+}
+
+/* =====================================================
+   HEATMAP
+   ===================================================== */
+
+.heatmap-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.heatmap-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  min-height: 0;
+}
+
 .heatmap-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex-shrink: 0;
 }
 
-/* native <select> styled to match the UI */
 .hmap-dropdown {
   appearance: none;
   -webkit-appearance: none;
-  padding: 8px 34px 8px 13px;
-  font-family: 'Inter', sans-serif;
-  font-size: 12px;
+  padding: 5px 26px 5px 10px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 11px;
   font-weight: 600;
   background: var(--input-bg);
   border: 1px solid var(--input-border);
-  border-radius: 8px;
+  border-radius: 6px;
   color: var(--text2);
   cursor: pointer;
   outline: none;
-  /* custom chevron */
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%237a8a9e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%238b949e' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 10px center;
-  transition: border-color 0.2s, color 0.2s;
+  background-position: right 8px center;
+  transition: border-color 0.2s;
 }
 
 .hmap-dropdown:hover,
-.hmap-dropdown:focus { border-color: #26a641; color: var(--text); }
-
-/* day labels + grid side by side */
-.heatmap-body {
-  display: flex;
-  gap: 6px;
-  align-items: flex-start;
+.hmap-dropdown:focus {
+  border-color: var(--accent2);
 }
 
-/* Sun / Mon / … / Sat on the left */
+.heatmap-body {
+  display: flex;
+  gap: 5px;
+  align-items: flex-start;
+  flex: 1;
+  min-height: 0;
+}
+
 .day-labels {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  padding-top: 2px;
+  padding-top: 1px;
   flex-shrink: 0;
 }
 
@@ -319,16 +461,14 @@ body {
   text-align: right;
 }
 
-/* cells + month labels stacked */
 .heatmap-right {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  flex: 1;              /* fills all remaining width after day labels */
+  gap: 3px;
+  flex: 1;
   min-width: 0;
 }
 
-/* rows = days of week, columns = weeks, auto-flow column-first */
 .heatmap-grid {
   display: grid;
   grid-template-rows: repeat(7, 13px);
@@ -336,66 +476,102 @@ body {
   gap: 3px;
 }
 
-/* ── GitHub green heat cells ── */
 .heat-cell {
-  /* width and height are set via inline style in Heatmap.jsx (dynamic cell size) */
-  border-radius: 3px;
+  border-radius: 2px;
   cursor: pointer;
   transition: transform 0.1s, outline 0.1s;
   flex-shrink: 0;
 }
 
-.heat-cell:hover { transform: scale(1.3); outline: 1px solid rgba(255,255,255,0.3); }
-.heat-cell.empty { background: transparent; cursor: default; pointer-events: none; }
+.heat-cell:hover {
+  transform: scale(1.35);
+  outline: 1px solid rgba(255, 255, 255, 0.25);
+}
 
-.dark .heat-cell.level-0 { background: #161b22; }
-.dark .heat-cell.level-1 { background: #0e4429; }
-.dark .heat-cell.level-2 { background: #006d32; }
-.dark .heat-cell.level-3 { background: #26a641; }
-.dark .heat-cell.level-4 { background: #39d353; }
+.heat-cell.empty {
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
 
-.light .heat-cell.level-0 { background: #ebedf0; }
-.light .heat-cell.level-1 { background: #9be9a8; }
-.light .heat-cell.level-2 { background: #40c463; }
-.light .heat-cell.level-3 { background: #30a14e; }
-.light .heat-cell.level-4 { background: #216e39; }
+.dark .heat-cell.level-0 {
+  background: #161b22;
+}
 
-/* month labels below cells */
+.dark .heat-cell.level-1 {
+  background: #0e4429;
+}
+
+.dark .heat-cell.level-2 {
+  background: #006d32;
+}
+
+.dark .heat-cell.level-3 {
+  background: #26a641;
+}
+
+.dark .heat-cell.level-4 {
+  background: #39d353;
+}
+
+.light .heat-cell.level-0 {
+  background: #ebedf0;
+}
+
+.light .heat-cell.level-1 {
+  background: #9be9a8;
+}
+
+.light .heat-cell.level-2 {
+  background: #40c463;
+}
+
+.light .heat-cell.level-3 {
+  background: #30a14e;
+}
+
+.light .heat-cell.level-4 {
+  background: #216e39;
+}
+
 .month-label-row {
   display: grid;
   gap: 3px;
-  margin-top: 2px;
+  margin-top: 1px;
 }
 
 .month-lbl {
-  font-size: 10px;
+  font-size: 9px;
   color: var(--text3);
   white-space: nowrap;
   line-height: 1;
 }
 
-/* Less ■■■■■ More */
 .heatmap-legend {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 3px;
   justify-content: flex-end;
+  flex-shrink: 0;
 }
 
-.legend-text { font-size: 11px; color: var(--text3); margin: 0 4px; }
+.legend-text {
+  font-size: 10px;
+  color: var(--text3);
+  margin: 0 3px;
+}
 
-/* floating tooltip on hover */
 .heat-tooltip {
   position: fixed;
   background: var(--card);
   border: 1px solid var(--border);
   color: var(--text);
-  font-size: 12px;
-  padding: 6px 12px;
-  border-radius: 8px;
+  font-size: 11px;
+  padding: 5px 10px;
+  border-radius: 7px;
   pointer-events: none;
   white-space: nowrap;
   z-index: 999;
   transform: translateX(-50%);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
 }

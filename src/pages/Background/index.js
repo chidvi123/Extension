@@ -14,7 +14,7 @@ let problemStartTime = null;
 
 // 🔽 RESTORE STATE
 chrome.storage.local.get("trackingState", (res) => {
-  const state = res.trackingState;
+  const state = res?.trackingState;
 
   if (state && state.isTracking) {
     console.log("♻️ Restoring tracking state");
@@ -270,7 +270,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name !== "trackProgress") return;
 
   const res = await chrome.storage.local.get("trackingState");
-  const state = res.trackingState;
+  const state = res?.trackingState;
 
   if (!state || !state.isTracking) return;
 
