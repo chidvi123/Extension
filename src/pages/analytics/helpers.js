@@ -10,10 +10,10 @@ export function formatTime(seconds) {
 // Return heat intensity level 0–4 from seconds
 export function getHeatLevel(seconds) {
   const m = seconds / 60;
-  if (m === 0)  return 0;
-  if (m < 20)   return 1;
-  if (m < 60)   return 2;
-  if (m < 120)  return 3;
+  if (m === 0) return 0;
+  if (m < 20) return 1;
+  if (m < 60) return 2;
+  if (m < 120) return 3;
   return 4;
 }
 
@@ -33,11 +33,11 @@ export function buildDayArray(data, days) {
 }
 
 export const MONTHS = [
-  "Jan","Feb","Mar","Apr","May","Jun",
-  "Jul","Aug","Sep","Oct","Nov","Dec"
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 ];
 
 export const FULL_MONTHS = [
-  "January","February","March","April","May","June",
-  "July","August","September","October","November","December"
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December"
 ];

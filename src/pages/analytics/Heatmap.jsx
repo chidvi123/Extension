@@ -5,9 +5,9 @@ import { getHeatLevel, formatTime, MONTHS, FULL_MONTHS } from "./helpers";
 //   yearData  Array<{ date: string, time: number }> — 365 entries
 
 export default function Heatmap({ yearData }) {
-  const [tooltip,    setTooltip]    = useState(null);
-  const [viewMonth,  setViewMonth]  = useState("all"); // "all" or "0"–"11"
-  const [cellSize,   setCellSize]   = useState(14);    // computed from container width
+  const [tooltip, setTooltip] = useState(null);
+  const [viewMonth, setViewMonth] = useState("all"); // "all" or "0"–"11"
+  const [cellSize, setCellSize] = useState(14);    // computed from container width
   const containerRef = useRef(null);
 
   // ── Build week columns (Sun → Sat), pad start with nulls ──────────────────
@@ -29,18 +29,18 @@ export default function Heatmap({ yearData }) {
   // Formula: (containerWidth - dayLabelWidth - gaps) / numWeeks
   // DAY_LABEL_W = 30px, GAP between cells = 3px
   const DAY_LABEL_W = 30;
-  const GAP         = 3;
+  const GAP = 3;
 
   useEffect(() => {
     function compute() {
       if (!containerRef.current) return;
-      const monthIdx    = viewMonth === "all" ? null : parseInt(viewMonth, 10);
-      const numWeeks    = monthIdx !== null
+      const monthIdx = viewMonth === "all" ? null : parseInt(viewMonth, 10);
+      const numWeeks = monthIdx !== null
         ? allWeeks.filter((w) => w.some((d) => d && new Date(d.date).getMonth() === monthIdx)).length
         : allWeeks.length;
 
       const available = containerRef.current.offsetWidth - DAY_LABEL_W - (numWeeks * GAP);
-      const size      = Math.floor(available / numWeeks);
+      const size = Math.floor(available / numWeeks);
       // Clamp between 10px (readable) and 18px (not too chunky)
       setCellSize(Math.max(10, Math.min(18, size)));
     }
@@ -61,7 +61,7 @@ export default function Heatmap({ yearData }) {
   });
 
   // ── Filter to single month when selected ──────────────────────────────────
-  const monthIdx    = viewMonth === "all" ? null : parseInt(viewMonth, 10);
+  const monthIdx = viewMonth === "all" ? null : parseInt(viewMonth, 10);
   const displayWeeks = monthIdx !== null
     ? allWeeks.filter((w) => w.some((d) => d && new Date(d.date).getMonth() === monthIdx))
     : allWeeks;
@@ -71,19 +71,29 @@ export default function Heatmap({ yearData }) {
   return (
     <div className="heatmap-wrap" ref={containerRef}>
 
-      {/* Title left, dropdown right */}
+      {/* Title left | legend + dropdown right */}
       <div className="heatmap-header">
         <h2 className="card-title" style={{ margin: 0 }}>🔥 Activity Heatmap</h2>
-        <select
-          className="hmap-dropdown"
-          value={viewMonth}
-          onChange={(e) => setViewMonth(e.target.value)}
-        >
-          <option value="all">Full Year</option>
-          {FULL_MONTHS.map((m, i) => (
-            <option key={m} value={String(i)}>{m}</option>
-          ))}
-        </select>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          {/* Less ■■■■■ More — inline in header */}
+          <div className="heatmap-legend" style={{ position: "static", margin: 0 }}>
+            <span className="legend-text">Less</span>
+            {[0, 1, 2, 3, 4].map((l) => (
+              <div key={l} className={`heat-cell level-${l}`} style={{ width: CELL, height: CELL }} />
+            ))}
+            <span className="legend-text">More</span>
+          </div>
+          <select
+            className="hmap-dropdown"
+            value={viewMonth}
+            onChange={(e) => setViewMonth(e.target.value)}
+          >
+            <option value="all">Full Year</option>
+            {FULL_MONTHS.map((m, i) => (
+              <option key={m} value={String(i)}>{m}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* Day labels + grid */}
@@ -91,7 +101,7 @@ export default function Heatmap({ yearData }) {
 
         {/* Sun/Mon/…/Sat — show only odd rows */}
         <div className="day-labels" style={{ width: DAY_LABEL_W }}>
-          {["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d, i) => (
+          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((d, i) => (
             <span key={i} className="day-lbl" style={{ height: CELL, lineHeight: `${CELL}px` }}>
               {i % 2 !== 0 ? d : ""}
             </span>
@@ -104,7 +114,7 @@ export default function Heatmap({ yearData }) {
             className="heatmap-grid"
             style={{
               gridTemplateColumns: `repeat(${displayWeeks.length}, ${CELL}px)`,
-              gridTemplateRows:    `repeat(7, ${CELL}px)`,
+              gridTemplateRows: `repeat(7, ${CELL}px)`,
             }}
           >
             {displayWeeks.flat().map((day, i) =>
@@ -151,14 +161,6 @@ export default function Heatmap({ yearData }) {
         </div>
       </div>
 
-      {/* Less ■■■■■ More */}
-      <div className="heatmap-legend">
-        <span className="legend-text">Less</span>
-        {[0, 1, 2, 3, 4].map((l) => (
-          <div key={l} className={`heat-cell level-${l}`} style={{ width: CELL, height: CELL }} />
-        ))}
-        <span className="legend-text">More</span>
-      </div>
 
       {/* Hover tooltip */}
       {tooltip && (

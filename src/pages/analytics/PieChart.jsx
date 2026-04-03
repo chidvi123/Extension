@@ -1,71 +1,95 @@
 import React from "react";
 
 // Props:
-//   easy   {number}
-//   medium {number}
-//   hard   {number}
+// data: [{ label, value, color }]
+// showTotal: boolean (optional)
 
-export default function PieChart({ easy, medium, hard }) {
-  const total = easy + medium + hard || 1;
+export default function PieChart({ data, showTotal = false }) {
+  const total = data.reduce((sum, d) => sum + d.value, 0);
+  const safeTotal = total || 1;
 
-  const slices = [
-    { label: "Easy",   value: easy,   color: "#10b981" },
-    { label: "Medium", value: medium, color: "#f59e0b" },
-    { label: "Hard",   value: hard,   color: "#ef4444" },
-  ];
+  const cx = 38, cy = 38, r = 30, strokeW = 13;
+  const circ = 2 * Math.PI * r;
 
-  let cum = -Math.PI / 2;
-  const cx = 56, cy = 56, r = 46;
+  let offset = 0; // start from 0
 
-  const paths = slices.map((s) => {
-    const angle = (s.value / total) * 2 * Math.PI;
-    const x1 = cx + r * Math.cos(cum);
-    const y1 = cy + r * Math.sin(cum);
-    cum += angle;
-    const x2 = cx + r * Math.cos(cum);
-    const y2 = cy + r * Math.sin(cum);
-    const largeArc = angle > Math.PI ? 1 : 0;
-    return {
-      ...s,
-      d: `M${cx},${cy} L${x1},${y1} A${r},${r} 0 ${largeArc},1 ${x2},${y2} Z`,
+  const arcs = data.map((d) => {
+    const dash = (d.value / safeTotal) * circ;
+
+    const arc = {
+      ...d,
+      dash,
+      offset: -offset
     };
+
+    offset += dash; // ✅ FIXED (was -= before)
+
+    return arc;
   });
 
   return (
-    <div className="pie-wrap">
-      <svg width="112" height="112" viewBox="0 0 112 112">
-        {total === 1
-          ? <circle cx={cx} cy={cy} r={r} fill="var(--track)" />
-          : paths.map((p) => (
-              <path
-                key={p.label}
-                d={p.d}
-                fill={p.color}
-                stroke="var(--card)"
-                strokeWidth="1.5"
-              />
-            ))
-        }
-        {/* Donut hole */}
-        <circle cx={cx} cy={cy} r={26} fill="var(--card)" />
-        {/* Center text */}
-        <text x={cx} y={cy - 4} textAnchor="middle" fill="var(--text)" fontSize="14" fontWeight="700">
-          {easy + medium + hard}
-        </text>
-        <text x={cx} y={cy + 10} textAnchor="middle" fill="var(--text3)" fontSize="8">
-          solved
-        </text>
-      </svg>
+    <div className="donut-wrap">
+      <div className="donut-chart">
+        <svg
+          width="96"
+          height="96"
+          viewBox="0 0 76 76"
+          style={{ transform: "rotate(-90deg)" }} // ✅ start from top cleanly
+        >
+          {/* Track */}
+          <circle
+            cx={cx}
+            cy={cy}
+            r={r}
+            fill="none"
+            stroke="var(--track)"
+            strokeWidth={strokeW}
+          />
 
-      <div className="pie-legend">
-        {slices.map((s) => (
-          <div key={s.label} className="pie-legend-row">
-            <span className="pie-dot" style={{ background: s.color }} />
-            <span className="pie-lbl">{s.label}</span>
-            <span className="pie-val">{s.value}</span>
-          </div>
-        ))}
+          {/* Segments */}
+          {arcs.map((a) =>
+            a.value > 0 ? (
+              <circle
+                key={a.label}
+                cx={cx}
+                cy={cy}
+                r={r}
+                fill="none"
+                stroke={a.color}
+                strokeWidth={strokeW}
+                strokeDasharray={`${a.dash} ${circ - a.dash}`}
+                strokeDashoffset={a.offset}
+                strokeLinecap="butt"
+              />
+            ) : null
+          )}
+        </svg>
       </div>
+
+      {/* Legend */}
+      <div className="donut-legend">
+        {data.map((d) => {
+          const percent = Math.round((d.value / safeTotal) * 100);
+
+          return (
+            <div key={d.label} className="donut-legend-row">
+              <span className="donut-dot" style={{ background: d.color }} />
+              <span className="donut-lbl">{d.label}</span>
+              <span className="donut-val">
+                {showTotal ? d.value : `${percent}%`}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Center text */}
+      {showTotal && total > 0 && (
+        <div className="donut-center">
+          <div className="donut-total">{total}</div>
+          <div className="donut-sub">solved</div>
+        </div>
+      )}
     </div>
   );
 }

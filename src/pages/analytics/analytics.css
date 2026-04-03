@@ -6,21 +6,21 @@
 
 .analytics.dark {
   --bg: #0d1117;
-  --card: #161b27;
-  --card2: #1c2333;
-  --border: #21293d;
+  --card: #1a1f2e;
+  --card2: #222840;
+  --border: #2a3045;
   --text: #e6edf3;
   --text2: #8b949e;
   --text3: #484f58;
   --accent: #58a6ff;
   --accent2: #3fb950;
-  --track: #21293d;
+  --track: #2a3045;
   --input-bg: #0d1117;
-  --input-border: #21293d;
+  --input-border: #2a3045;
 }
 
 .analytics.light {
-  --bg: #f3f6fc;
+  --bg: #f0f2f8;
   --card: #ffffff;
   --card2: #f6f8ff;
   --border: #d8dee6;
@@ -52,7 +52,6 @@ body,
   width: 100%;
   height: 100%;
   overflow: hidden;
-  /* NO scroll at all */
 }
 
 body {
@@ -60,7 +59,7 @@ body {
 }
 
 /* =====================================================
-   ROOT CONTAINER — fills viewport exactly
+   ROOT CONTAINER
    ===================================================== */
 
 .analytics {
@@ -68,7 +67,7 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  padding: 14px 18px 12px;
+  padding: 12px 16px 10px;
   background: var(--bg);
   color: var(--text);
   overflow: hidden;
@@ -85,29 +84,29 @@ body {
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
-  height: 36px;
+  height: 32px;
 }
 
 .page-title {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.3px;
 }
 
 .title-icon {
-  font-size: 20px;
+  font-size: 19px;
   color: var(--accent);
   line-height: 1;
 }
 
 .theme-toggle {
-  padding: 6px 14px;
+  padding: 5px 13px;
   font-family: 'DM Sans', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   background: var(--card);
   border: 1px solid var(--border);
@@ -124,58 +123,70 @@ body {
 
 /* =====================================================
    DASHBOARD GRID
-   4 columns, 2 rows — fills all remaining height
+   Row 1: stat-pair (narrow) | heatmap (wide)
+   Row 2: left-col (platform+diff stacked) | topic | weak
    ===================================================== */
 
 .dashboard-grid {
   flex: 1;
-  /* takes all height below header */
   display: grid;
-  /* 4 equal columns */
-  grid-template-columns: 160px 160px 1fr 1fr;
-  /* 2 rows: heatmap row slightly taller */
-  grid-template-rows: 1fr 1fr;
+  grid-template-columns: 310px 1fr 1fr 1fr;
+  grid-template-rows: 38% 62%;
   gap: 10px;
   min-height: 0;
-  /* critical — prevents grid from overflowing */
 }
 
-/* ── ROW 1 assignments ── */
+/* ── ROW 1 ── */
 
-/* Stat pair spans col 1+2, row 1 */
+/* stat-pair: col 1, row 1 — two cards side by side */
 .stat-pair {
-  grid-column: 1 / 3;
+  grid-column: 1;
   grid-row: 1;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
 
-/* Heatmap spans col 3+4, row 1 */
+/* heatmap: col 2-4, row 1 */
 .heatmap-card {
-  grid-column: 3 / 5;
+  grid-column: 2 / 5;
   grid-row: 1;
   overflow: hidden;
 }
 
-/* ── ROW 2 assignments ── */
+/* ── ROW 2 ── */
 
-/* Platform usage: col 1+2, row 2 */
-.platform-card {
-  grid-column: 1 / 3;
+/* left-col: col 1, row 2 — platform + difficulty stacked */
+.left-col {
+  grid-column: 1;
   grid-row: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
 }
 
-/* Pie chart: col 3, row 2 */
-.pie-card {
-  grid-column: 3;
-  grid-row: 2;
+.platform-card,
+.diff-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Weak topics: col 4, row 2 */
-.weak-card {
+/* topic: col 2-3, row 2 */
+.topic-col {
+  grid-column: 2 / 4;
+  grid-row: 2;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* weak: col 4, row 2 */
+.weak-col {
   grid-column: 4;
   grid-row: 2;
+  min-height: 0;
 }
 
 /* =====================================================
@@ -185,7 +196,7 @@ body {
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 12px;
+  border-radius: 14px;
   padding: 14px 16px;
   overflow: hidden;
   min-height: 0;
@@ -193,12 +204,12 @@ body {
 }
 
 .card-title {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--text2);
   margin-bottom: 10px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
 }
 
 /* =====================================================
@@ -206,144 +217,197 @@ body {
    ===================================================== */
 
 .stat-card {
-  position: relative;
   display: flex;
   flex-direction: column;
-  justify-content: flex-end;
-  padding: 14px 16px;
-  min-height: 0;
+  justify-content: center;
+  padding: 11px 13px;
+  gap: 2px;
 }
 
-.stat-info-icon {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  font-size: 13px;
-  color: var(--text3);
-  line-height: 1;
-  user-select: none;
-}
-
-.stat-card .stat-lbl {
-  font-size: 11px;
-  font-weight: 600;
+.stat-lbl {
+  font-size: 16px;
+  font-weight: 700;
   color: var(--text2);
-  margin-bottom: 4px;
   text-transform: uppercase;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.5px;
+  line-height: 1.4;
 }
 
-.stat-card .stat-val {
-  font-size: 42px;
+.stat-val {
+  font-size: 48px;
   font-weight: 700;
   color: var(--text);
   line-height: 1;
   letter-spacing: -1.5px;
   font-family: 'DM Mono', monospace;
+  margin-top: 2px;
+  padding-top:10px;
+  padding-bottom:2px;
+}
+
+.stat-sub {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 1px;
 }
 
 /* =====================================================
-   PLATFORM USAGE
+   DONUT CHART (shared by Platform & Difficulty)
    ===================================================== */
 
-.platform-row {
+.donut-wrap {
   display: flex;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
-  margin-bottom: 5px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
 }
 
-.top-gap {
-  margin-top: 10px;
-}
-
-.p-name {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text2);
-}
-
-.p-pct {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--text);
-  font-family: 'DM Mono', monospace;
-}
-
-.bar-track {
-  height: 7px;
-  background: var(--track);
-  border-radius: 4px;
-  overflow: hidden;
-}
-
-.bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 1s ease;
-}
-
-.bar-fill.lc {
-  background: #f89f1b;
-}
-
-.bar-fill.gfg {
-  background: #10b981;
-}
-
-/* =====================================================
-   PIE CHART
-   ===================================================== */
-
-.pie-wrap {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  height: calc(100% - 30px);
-  /* fill card minus title */
-}
-
-.pie-wrap svg {
+.donut-chart {
   flex-shrink: 0;
 }
 
-.pie-legend {
+.donut-legend {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 7px;
 }
 
-.pie-legend-row {
+.donut-legend-row {
   display: flex;
   align-items: center;
   gap: 7px;
 }
 
-.pie-dot {
+.donut-dot {
   width: 8px;
   height: 8px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.pie-lbl {
+.donut-lbl {
   font-size: 12px;
   color: var(--text2);
   flex: 1;
+  white-space: nowrap;
 }
 
-.pie-val {
+.donut-val {
   font-size: 12px;
   font-weight: 700;
   color: var(--text);
   font-family: 'DM Mono', monospace;
 }
 
+.donut-chart circle {
+  transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease;
+}
 /* =====================================================
-   WEAK TOPICS — top 5 max
+   DSA TOPIC CHART
    ===================================================== */
 
-.weak-card .card {
+.topic-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.topic-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.topic-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+.topic-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.topic-name {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text2);
+  width: 120px;
+  flex-shrink: 0;
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topic-bar-track {
+  flex: 1;
+  height: 22px;
+  background: var(--track);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.topic-bar-fill {
+  height: 100%;
+  border-radius: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 7px;
+  min-width: 28px;
+  transition: width 0.8s ease, filter 0.2s ease;
+}
+
+.topic-bar-val {
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  font-family: 'DM Mono', monospace;
+}
+
+.show-more-btn {
+  margin-top: 10px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 13px;
+  /* 🔥 bigger text */
+  font-weight: 600;
+  padding: 6px 12px;
+  /* 🔥 more clickable */
+  border-radius: 8px;
+  /* smooth */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: center;
+}
+
+.show-more-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+
+/* =====================================================
+   WEAK TOPICS
+   ===================================================== */
+
+.weak-inner {
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -353,25 +417,35 @@ body {
   list-style: none;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 7px;
   flex: 1;
-  overflow: hidden;
-  /* never scroll — top 5 fit */
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.weak-list::-webkit-scrollbar {
+  width: 4px;
+}
+
+.weak-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
 }
 
 .weak-item {
   background: var(--card2);
-  border-radius: 8px;
-  padding: 8px 11px;
-  border-left: 2px solid #f59e0b;
+  border-radius: 9px;
+  padding: 12px 14px;
+  border-left: 3px solid #f59e0b;
   flex-shrink: 0;
 }
 
 .weak-name {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: #f59e0b;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -400,7 +474,7 @@ body {
 .heatmap-wrap {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   height: 100%;
   min-height: 0;
 }
@@ -477,7 +551,7 @@ body {
 }
 
 .heat-cell {
-  border-radius: 2px;
+  border-radius: 3px;
   cursor: pointer;
   transition: transform 0.1s, outline 0.1s;
   flex-shrink: 0;
@@ -495,7 +569,7 @@ body {
 }
 
 .dark .heat-cell.level-0 {
-  background: #161b22;
+  background: #1e2535;
 }
 
 .dark .heat-cell.level-1 {
@@ -540,6 +614,11 @@ body {
   margin-top: 1px;
 }
 
+.weak-inner .card-title {
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
 .month-lbl {
   font-size: 9px;
   color: var(--text3);
@@ -551,7 +630,6 @@ body {
   display: flex;
   align-items: center;
   gap: 3px;
-  justify-content: flex-end;
   flex-shrink: 0;
 }
 

@@ -6,8 +6,8 @@ import { formatTime } from "./helpers";
 
 export default function WeakTopics({ weakTopics }) {
   return (
-    <div className="card">
-      <h2 className="card-title">⚠️ Weak Topics</h2>
+    <div className="card weak-inner">
+      <h2 className="card-title" >⚠️ Weak Topics</h2>
 
       {weakTopics.length === 0 ? (
         <p className="empty-msg">No weak topics detected yet. Keep solving!</p>
