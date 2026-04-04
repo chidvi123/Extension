@@ -121,14 +121,14 @@ export default function Heatmap({ yearData }) {
               day ? (
                 <div
                   key={i}
-                  className={`heat-cell level-${getHeatLevel(day.time)}`}
+                  className={`heat-cell level-${getHeatLevel(day.count)}`}
                   style={{ width: CELL, height: CELL }}
                   onMouseEnter={(e) => {
                     const d = new Date(day.date);
                     setTooltip({
                       text: `${d.toLocaleDateString("en-US", {
                         weekday: "short", month: "short", day: "numeric", year: "numeric",
-                      })} · ${day.time > 0 ? formatTime(day.time) : "no activity"}`,
+                      })} · ${day.count > 0 ? `${day.count} Problem solved` :"no problems solved"}`,
                       x: e.clientX,
                       y: e.clientY,
                     });

@@ -8,27 +8,27 @@ export function formatTime(seconds) {
 }
 
 // Return heat intensity level 0–4 from seconds
-export function getHeatLevel(seconds) {
-  const m = seconds / 60;
-  if (m === 0) return 0;
-  if (m < 20) return 1;
-  if (m < 60) return 2;
-  if (m < 120) return 3;
+export function getHeatLevel(count) {
+  if (count==0) return 0;
+  if (count<=2) return 1;
+  if (count<=4) return 2;
+  if (count<=6) return 3;
   return 4;
 }
 
 // Build array of { date, time } for the past `days` days
 export function buildDayArray(data, days) {
   const today = new Date();
+
   return Array.from({ length: days }, (_, i) => {
     const d = new Date(today);
     d.setDate(today.getDate() - (days - 1 - i));
+
     const key = d.toISOString().split("T")[0];
     const sessions = data[key] || [];
-    const time = sessions
-      .filter((r) => r.type === "platform")
-      .reduce((sum, r) => sum + r.duration, 0);
-    return { date: key, time };
+    
+    const count=sessions.filter((r)=> r.type =="problem" && r.solved).length;
+    return { date: key, count };
   });
 }
 

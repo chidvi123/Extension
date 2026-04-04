@@ -61,7 +61,7 @@ function Analytics() {
       });
 
       const days365 = buildDayArray(sessionData, 365);
-      const active = days365.filter((d) => d.time > 0).length;
+      const active = days365.filter((d) => d.count > 0).length;
       const overallAvg = totalSolveTime / (solved || 1);
 
       const weak = Object.entries(topics)

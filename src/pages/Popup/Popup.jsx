@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./Popup.css";
+import { LineChart,Line,XAxis,YAxis,Tooltip,Area,ResponsiveContainer } from "recharts";
 
 /* ---------------------------------------------------------
    Utility: Convert seconds into readable time
@@ -44,6 +45,78 @@ function computeStreak(data) {
   return count;
 }
 
+//BUILD GRAPH DATA
+function buildGraphData(data,range){
+  const now = new Date();
+
+  if(range==="day"){
+    const hours=Array(24).fill(0);
+    
+    const todayKey=now.toISOString().split("T")[0];
+    const sessions=data[todayKey] || [];
+    
+      sessions.forEach((rec)=>{
+        if(rec.type==="platform"){
+          const hour=new Date(rec.start).getHours();
+          hours[hour]+=rec.duration;
+        }
+      });
+
+    return hours.map((v,i)=>({
+      hour:i,
+      time:v
+    }));
+  }
+
+  if(range==="week"){
+    const days=Array(7).fill(0);
+    Object.entries(data).forEach(([dateKey,sessions])=>{
+      const d=new Date(dateKey);
+      const diff=(now-d)/(1000*60*60*24);
+
+      if(diff<=7){
+        const day=d.getDay();
+        sessions.forEach((rec)=>{
+          if(rec.type==="platform"){
+             days[day]+=rec.duration;
+          }
+        });
+      }
+    });
+
+    return ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map((d, i) => ({
+      day: d,
+      time: days[i]
+    }));
+  }
+
+  if(range==="month"){
+    const result=[];
+
+    Object.entries(data).forEach(([dateKey,sessions])=>{
+      const d= new Date(dateKey);
+      const diff=(now-d)/(1000*60*60*24);
+
+      if(diff<=30){
+        let total=0;
+
+        sessions.forEach((rec)=>{
+          if(rec.type==="platform"){
+            total+=rec.duration;
+          }
+        });
+
+        result.push({
+          date:dateKey,
+          time:total
+        });
+      }
+    });
+
+    return result.sort((a,b)=>new Date(a.date)-new Date(b.date));
+  }
+}
+
 /* ---------------------------------------------------------
    Empty analytics structure
 ---------------------------------------------------------- */
@@ -71,6 +144,7 @@ const EMPTY = {
   topics: {}
 };
 
+//org code
 export default function Popup() {
 
   const [stats, setStats] = useState(EMPTY);
@@ -78,6 +152,7 @@ export default function Popup() {
   const [dark, setDark] = useState(true);
   const [range, setRange] = useState("day");
   const [streak, setStreak] = useState(0);
+  const [graphData,setGraphData]=useState([]);
 
   const hasAnimated = useRef(false);
 
@@ -88,6 +163,7 @@ function loadDataFromStorage() {
 
     const currentStreak = computeStreak(data);
     setStreak(currentStreak);
+    setGraphData(buildGraphData(data,range));
 
     const now = new Date();
     const sessions = [];
@@ -190,6 +266,7 @@ function loadDataFromStorage() {
 
       const currentStreak = computeStreak(data);
       setStreak(currentStreak);
+      setGraphData(buildGraphData(data,range));
 
       const now = new Date();
       const sessions = [];
@@ -560,6 +637,90 @@ useEffect(() => {
 
       </div>
 
+      {/* 🔥 ACTIVITY TREND GRAPH */}
+      <div className="card">
+
+        <h2 className="card-title">📊 Activity Trend</h2>
+
+        <ResponsiveContainer width="100%" height={220}>
+          <LineChart
+            data={graphData}
+            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          >
+
+            {/* 🔥 Gradient Definition */}
+            <defs>
+              <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#4ade80" stopOpacity={0.9}/>
+                <stop offset="100%" stopColor="#4ade80" stopOpacity={0.05}/>
+              </linearGradient>
+            </defs>
+
+            {/* 🔥 X Axis */}
+            <XAxis
+              dataKey={
+                range === "day"
+                  ? "hour"
+                  : range === "week"
+                  ? "day"
+                  : "date"
+              }
+              tickFormatter={(val) => {
+                if (range === "day") return `${val}:00`;
+                if (range === "week") return val;
+                return val.slice(5); // MM-DD
+              }}
+              stroke="#94a3b8"
+              tick={{ fontSize: 11 }}
+            />
+
+            <YAxis
+              stroke="#475569"
+              tick={{ fontSize: 10 }}
+              width={30}
+            />
+
+            {/* 🔥 Tooltip */}
+            <Tooltip
+              formatter={(v) => formatTime(v)}
+              contentStyle={{
+                background: "#0f172a",
+                border: "none",
+                borderRadius: "10px",
+                color: "#fff",
+                fontSize: "12px",
+                padding: "8px 10px"
+              }}
+              labelStyle={{ color: "#94a3b8" }}
+            />
+
+            {/* 🔥 Area Fill */}
+            <Area
+              type="monotone"
+              dataKey="time"
+              stroke="none"
+              fill="url(#gradient)"
+            />
+
+            {/* 🔥 Smooth Line */}
+            <Line
+              type="monotone"
+              dataKey="time"
+              stroke="#4ade80"
+              strokeWidth={3}
+              dot={false}
+              activeDot={{
+                r: 5,
+                stroke: "#4ade80",
+                strokeWidth: 2,
+                fill: "#0f172a"
+              }}
+            />
+
+          </LineChart>
+        </ResponsiveContainer>
+
+      </div>
       {/* TOPICS */}
       <div className="card">
 
