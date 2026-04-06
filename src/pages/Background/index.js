@@ -256,7 +256,9 @@ setTimeout(async () => {
     active: true,
     currentWindow: true
   });
+  
 
+  //optinal chaining tab?.id
   if (tab?.id) {
     handleTabChange(tab.id);
   }

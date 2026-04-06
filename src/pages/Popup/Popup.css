@@ -451,3 +451,249 @@ body { min-width: 400px; }
   transform: translateY(0);
   box-shadow: none;
 }
+
+.input {
+  flex: 1;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: none;
+  background: #1e293b;
+  color: white;
+  font-size: 12px;
+}
+
+/* remove number input arrows (spinner) */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.input.small {
+  width: 50px;
+  text-align: center;
+}
+
+
+/* GOAL TRACKER CARD */
+.goal-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.goal-card-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.goal-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ef4444;
+  flex-shrink: 0;
+}
+
+.goal-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-badge {
+  font-size: 10px;
+  color: var(--text2);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 3px 10px;
+}
+
+.goal-edit-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.15s;
+}
+
+.goal-edit-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.goal-today-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.goal-today-label {
+  font-size: 11px;
+  color: var(--text3);
+}
+
+.goal-today-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.goal-today-time {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.goal-prob-badge {
+  font-size: 11px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 2px 8px;
+  color: var(--text2);
+}
+
+.goal-row {
+  margin-bottom: 10px;
+}
+
+.goal-row:last-child {
+  margin-bottom: 0;
+}
+
+.goal-row-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.goal-row-name {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--text2);
+}
+
+.goal-row-pct {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.goal-row-pct.green { color: #16a34a; }
+.goal-row-pct.amber { color: #d97706; }
+
+.goal-bar {
+  height: 4px;
+  background: var(--track);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.goal-bar-fill {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.8s ease;
+}
+
+.goal-bar-fill.green { background: #22c55e; }
+.goal-bar-fill.amber { background: #f59e0b; }
+
+/* EDIT FORM */
+.goal-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.goal-edit-inputs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap:nowrap;
+}
+
+.goal-edit-sep {
+  font-size: 13px;
+  color: var(--text3);
+}
+
+.goal-input {
+  width:45px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 12px;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+}
+
+.goal-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.goal-input.wide {
+  width:80px;
+  text-align: left;
+}
+
+.goal-save-btn {
+  width: 100%;
+  padding: 8px;
+  background: var(--accent);
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  transition: opacity 0.15s;
+}
+
+.goal-delete-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: #ef4444;
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.goal-delete-btn:hover {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.goal-save-btn:hover { opacity: 0.85; }
+.goal-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }

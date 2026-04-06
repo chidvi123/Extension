@@ -156,6 +156,25 @@ export default function Popup() {
 
   const hasAnimated = useRef(false);
 
+
+  // 🎯 TARGET SYSTEM
+  const [target, setTarget] = useState({
+    time: {
+      h:"",
+      m:"",
+      s:""
+    },
+    problems: ""
+  });
+
+  const [progress, setProgress] = useState({
+    time: 0,
+    problems: 0
+  });
+
+const [saveMessage, setSaveMessage] = useState("");
+const [isEditing,setIsEditing]=useState(true);
+
   // 🔽 ADD THIS EXACTLY HERE
 function loadDataFromStorage() {
 
@@ -244,6 +263,67 @@ function loadDataFromStorage() {
     setStats(s);
 
   });
+}
+
+
+//SAVE TARGET
+
+function saveTarget() {
+
+  chrome.storage.local.get("targets", (res) => {
+
+    const existing = res.targets || {};
+    
+    const h = Number(target.time.h || 0);
+    const m = Number(target.time.m || 0);
+    const s = Number(target.time.s || 0);
+
+    const totalSeconds = h * 3600 + m * 60 + s;
+
+    const updated = {
+      ...existing,
+      [range]: {
+        time: totalSeconds || null,
+        problems: target.problems ? Number(target.problems) : null
+      }
+    };
+
+    chrome.storage.local.set({ targets: updated });
+
+    setSaveMessage("✅ Target saved!");
+    setTimeout(() => setSaveMessage(""), 2000);
+    
+    setIsEditing(false);
+    loadDataFromStorage();
+
+  });
+}
+
+/* ---------------------------------------------------------
+     Delete Target
+  ---------------------------------------------------------- */
+
+  function deleteTarget() {
+
+  chrome.storage.local.get("targets", (res) => {
+
+    const existing = res.targets || {};
+
+    delete existing[range]; // remove current range target
+
+    chrome.storage.local.set({ targets: existing });
+
+    setTarget({
+      time: { h: "", m: "", s: "" },
+      problems: ""
+    });
+
+    setIsEditing(true); // back to edit mode
+
+    loadDataFromStorage();
+
+  });
+
 }
 
   /* ---------------------------------------------------------
@@ -355,6 +435,32 @@ function loadDataFromStorage() {
       }
 
     });
+//target 
+    chrome.storage.local.get("targets", (res) => {
+      if (res.targets && res.targets[range]) {
+
+      const t = res.targets[range].time || 0;
+
+      setTarget({
+        time: {
+          h: Math.floor(t / 3600),
+          m: Math.floor((t % 3600) / 60),
+          s: t % 60
+        },
+        problems: res.targets[range].problems || ""
+      });
+      setIsEditing(false);
+
+      }
+      else{
+        setTarget({
+          time:{h:"",m:"",s:""},
+          problems:""
+        });
+
+        setIsEditing(true);
+      }
+    });
 
   }, [range]);
 
@@ -375,6 +481,44 @@ useEffect(() => {
 
 }, [range]);
 
+
+//Progress UseEffect
+
+useEffect(() => {
+
+  chrome.storage.local.get("targets", (res) => {
+
+    const current = res.targets?.[range];
+
+    if (!current) return;
+
+    let timeProgress = 0;
+    let problemProgress = 0;
+
+    if (current.time) {
+      timeProgress = Math.min(
+        (stats.totalCodingTime / current.time) * 100,
+        100
+      );
+    }
+
+    if (current.problems) {
+      problemProgress = Math.min(
+        (stats.totalProblems / current.problems) * 100,
+        100
+      );
+    }
+
+    setProgress({
+      time: timeProgress,
+      problems: problemProgress
+    });
+
+  });
+
+}, [stats, range]);
+
+
   /* ---------------------------------------------------------
      Toggle theme
   ---------------------------------------------------------- */
@@ -389,6 +533,8 @@ useEffect(() => {
     });
 
   }
+
+  
 
   /* ---------------------------------------------------------
      Derived values
@@ -451,14 +597,6 @@ useEffect(() => {
         </div>
 
         <div className="header-right">
-
-            <button
-              className="theme-btn"
-              onClick={loadDataFromStorage}
-            >
-            🔄
-            </button>
-
           <div className="streak">
             <span>🔥</span>
             <span className="streak-num">{streak}d</span>
@@ -521,6 +659,8 @@ useEffect(() => {
 
         </div>
 
+
+
         <div className="platform-row">
           <span className="dot orange" />
           LeetCode
@@ -550,6 +690,142 @@ useEffect(() => {
             style={{ width: gfgPct }}
           />
         </div>
+
+      </div>
+
+      {/* 🎯 GOAL TRACKER CARD */}
+      <div className="card" style={{ padding: "14px" }}>
+
+        {/* HEADER */}
+        <div className="goal-card-header">
+          <div className="goal-card-title">
+            <div className="goal-dot" />
+            Goal Tracker
+          </div>
+          <div className="goal-header-right">
+            <span className="goal-badge">
+              {range.charAt(0).toUpperCase() + range.slice(1)} target
+            </span>
+            {!isEditing && (
+              <>
+              <button className="goal-edit-btn" onClick={() => setIsEditing(true)}>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                Edit
+              </button>
+
+              <button className="goal-delete-btn" onClick={deleteTarget}>
+                🗑
+              </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {isEditing ? (
+
+          <div className="goal-edit-form">
+            <div className="goal-edit-inputs">
+              <input
+                type="number" max="23" placeholder="HH"
+                value={target.time.h}
+                onChange={(e) => setTarget({ ...target, time: { ...target.time, h: e.target.value } })}
+                className="goal-input"
+              />
+              <span className="goal-edit-sep">:</span>
+              <input
+                type="number" max="59" placeholder="MM"
+                value={target.time.m}
+                onChange={(e) => setTarget({ ...target, time: { ...target.time, m: e.target.value } })}
+                className="goal-input"
+              />
+              <span className="goal-edit-sep">:</span>
+              <input
+                type="number" max="59" placeholder="SS"
+                value={target.time.s}
+                onChange={(e) => setTarget({ ...target, time: { ...target.time, s: e.target.value } })}
+                className="goal-input"
+              />
+              <input
+                type="number" placeholder="Problems"
+                value={target.problems || ""}
+                onChange={(e) => setTarget({ ...target, problems: e.target.value })}
+                className="goal-input wide"
+                style={{ flex: 2 }}
+              />
+            </div>
+            <button
+              className="goal-save-btn"
+              onClick={saveTarget}
+              disabled={!target.time.h && !target.time.m && !target.time.s && !target.problems}
+            >
+              Save Target
+            </button>
+            {saveMessage && (
+              <div style={{ color: "#4ade80", fontSize: "11px", textAlign: "center" }}>
+                {saveMessage}
+              </div>
+            )}
+          </div>
+
+        ) : (
+
+          <>
+            {/* TODAY ROW */}
+            <div className="goal-today-row">
+              <span className="goal-today-label">Today</span>
+              <div className="goal-today-right">
+                <span className="goal-today-time">
+                  {target.time.h || 0}h {target.time.m || 0}m {target.time.s || 0}s
+                </span>
+
+                <span className="goal-prob-badge">
+                  {target.problems || 0} problems
+                </span>
+              </div>
+            </div>
+
+            {/* TIME GOAL */}
+            {(target.time.h || target.time.m || target.time.s) && (
+              <div className="goal-row">
+                <div className="goal-row-top">
+                  <div className="goal-row-name">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Time goal
+                  </div>
+                  <span className="goal-row-pct green">{Math.round(progress.time)}%</span>
+                </div>
+                <div className="goal-bar">
+                  <div className="goal-bar-fill green" style={{ width: `${progress.time}%` }} />
+                </div>
+              </div>
+            )}
+
+            {/* PROBLEM GOAL */}
+            {target.problems && (
+              <div className="goal-row">
+                <div className="goal-row-top">
+                  <div className="goal-row-name">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+                      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+                    </svg>
+                    Problem goal
+                  </div>
+                  <span className="goal-row-pct amber">{Math.round(progress.problems)}%</span>
+                </div>
+                <div className="goal-bar">
+                  <div className="goal-bar-fill amber" style={{ width: `${progress.problems}%` }} />
+                </div>
+              </div>
+            )}
+          </>
+
+        )}
 
       </div>
 
