@@ -172,6 +172,7 @@ function extractLeetCodeProblemData() {
 
   return {
     title,
+    name:title,
     difficulty,
     topics,
     platform: "leetcode",
@@ -191,6 +192,7 @@ function extractGFGProblemData() {
 
   return {
     title,
+    name:title,
     difficulty,
     topics,
     platform: "geeksforgeeks",

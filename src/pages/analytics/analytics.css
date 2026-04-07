@@ -17,6 +17,19 @@
   --track: #2a3045;
   --input-bg: #0d1117;
   --input-border: #2a3045;
+
+  /* Recent-specific */
+  --recent-item-bg: #1e2535;
+  --recent-item-hover: #252d42;
+  --divider: #2a3045;
+  --insight-avg-bg: #1a2540;
+  --insight-avg-text: #58a6ff;
+  --insight-fast-bg: #0d2617;
+  --insight-fast-text: #3fb950;
+  --insight-slow-bg: #2a1515;
+  --insight-slow-text: #f87171;
+  --pace-fill: #2a3045;
+  --pace-marker: #58a6ff;
 }
 
 .analytics.light {
@@ -32,6 +45,19 @@
   --track: #e6eaef;
   --input-bg: #f6f8fa;
   --input-border: #d0d7de;
+
+  /* Recent-specific */
+  --recent-item-bg: #f6f8ff;
+  --recent-item-hover: #eef1fb;
+  --divider: #e2e6ef;
+  --insight-avg-bg: #eff6ff;
+  --insight-avg-text: #1d4ed8;
+  --insight-fast-bg: #f0fdf4;
+  --insight-fast-text: #15803d;
+  --insight-slow-bg: #fff1f2;
+  --insight-slow-text: #b91c1c;
+  --pace-fill: #e6eaef;
+  --pace-marker: #0969da;
 }
 
 /* =====================================================
@@ -51,7 +77,7 @@ body,
 #root {
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 body {
@@ -123,22 +149,18 @@ body {
 
 /* =====================================================
    DASHBOARD GRID
-   Row 1: stat-pair (narrow) | heatmap (wide)
-   Row 2: left-col (platform+diff stacked) | topic | weak
    ===================================================== */
 
 .dashboard-grid {
   flex: 1;
   display: grid;
   grid-template-columns: 310px 1fr 1fr 1fr;
-  grid-template-rows: 38% 62%;
+  grid-auto-rows: minmax(180px, auto);
   gap: 10px;
   min-height: 0;
 }
 
-/* ── ROW 1 ── */
-
-/* stat-pair: col 1, row 1 — two cards side by side */
+/* ROW 1 */
 .stat-pair {
   grid-column: 1;
   grid-row: 1;
@@ -147,16 +169,13 @@ body {
   gap: 10px;
 }
 
-/* heatmap: col 2-4, row 1 */
 .heatmap-card {
   grid-column: 2 / 5;
   grid-row: 1;
   overflow: hidden;
 }
 
-/* ── ROW 2 ── */
-
-/* left-col: col 1, row 2 — platform + difficulty stacked */
+/* ROW 2 */
 .left-col {
   grid-column: 1;
   grid-row: 2;
@@ -166,15 +185,6 @@ body {
   min-height: 0;
 }
 
-.platform-card,
-.diff-card {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-/* topic: col 2-3, row 2 */
 .topic-col {
   grid-column: 2 / 4;
   grid-row: 2;
@@ -182,11 +192,16 @@ body {
   overflow: hidden;
 }
 
-/* weak: col 4, row 2 */
 .weak-col {
   grid-column: 4;
   grid-row: 2;
   min-height: 0;
+}
+
+/* ROW 3 */
+.recent-row {
+  grid-column: 1 / 5;
+  grid-row: 3;
 }
 
 /* =====================================================
@@ -241,8 +256,8 @@ body {
   letter-spacing: -1.5px;
   font-family: 'DM Mono', monospace;
   margin-top: 2px;
-  padding-top:10px;
-  padding-bottom:2px;
+  padding-top: 10px;
+  padding-bottom: 2px;
 }
 
 .stat-sub {
@@ -252,7 +267,7 @@ body {
 }
 
 /* =====================================================
-   DONUT CHART (shared by Platform & Difficulty)
+   DONUT CHART
    ===================================================== */
 
 .donut-wrap {
@@ -264,9 +279,7 @@ body {
   min-height: 0;
 }
 
-.donut-chart {
-  flex-shrink: 0;
-}
+.donut-chart { flex-shrink: 0; }
 
 .donut-legend {
   display: flex;
@@ -304,6 +317,15 @@ body {
 .donut-chart circle {
   transition: stroke-dasharray 0.6s ease, stroke-dashoffset 0.6s ease;
 }
+
+.platform-card,
+.diff-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
 /* =====================================================
    DSA TOPIC CHART
    ===================================================== */
@@ -326,10 +348,7 @@ body {
   scrollbar-color: var(--border) transparent;
 }
 
-.topic-list::-webkit-scrollbar {
-  width: 4px;
-}
-
+.topic-list::-webkit-scrollbar { width: 4px; }
 .topic-list::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 4px;
@@ -386,12 +405,9 @@ body {
   border: 1px solid var(--border);
   color: var(--text);
   font-size: 13px;
-  /* 🔥 bigger text */
   font-weight: 600;
   padding: 6px 12px;
-  /* 🔥 more clickable */
   border-radius: 8px;
-  /* smooth */
   cursor: pointer;
   transition: all 0.2s ease;
   align-self: center;
@@ -401,7 +417,6 @@ body {
   border-color: var(--accent);
   color: var(--accent);
 }
-
 
 /* =====================================================
    WEAK TOPICS
@@ -424,10 +439,7 @@ body {
   scrollbar-color: var(--border) transparent;
 }
 
-.weak-list::-webkit-scrollbar {
-  width: 4px;
-}
-
+.weak-list::-webkit-scrollbar { width: 4px; }
 .weak-list::-webkit-scrollbar-thumb {
   background: var(--border);
   border-radius: 4px;
@@ -454,6 +466,11 @@ body {
 .weak-meta {
   font-size: 11px;
   color: var(--text3);
+}
+
+.weak-inner .card-title {
+  font-size: 13px;
+  margin-bottom: 12px;
 }
 
 .empty-msg {
@@ -506,9 +523,7 @@ body {
 }
 
 .hmap-dropdown:hover,
-.hmap-dropdown:focus {
-  border-color: var(--accent2);
-}
+.hmap-dropdown:focus { border-color: var(--accent2); }
 
 .heatmap-body {
   display: flex;
@@ -568,55 +583,22 @@ body {
   pointer-events: none;
 }
 
-.dark .heat-cell.level-0 {
-  background: #1e2535;
-}
+.dark .heat-cell.level-0 { background: #1e2535; }
+.dark .heat-cell.level-1 { background: #0e4429; }
+.dark .heat-cell.level-2 { background: #006d32; }
+.dark .heat-cell.level-3 { background: #26a641; }
+.dark .heat-cell.level-4 { background: #39d353; }
 
-.dark .heat-cell.level-1 {
-  background: #0e4429;
-}
-
-.dark .heat-cell.level-2 {
-  background: #006d32;
-}
-
-.dark .heat-cell.level-3 {
-  background: #26a641;
-}
-
-.dark .heat-cell.level-4 {
-  background: #39d353;
-}
-
-.light .heat-cell.level-0 {
-  background: #ebedf0;
-}
-
-.light .heat-cell.level-1 {
-  background: #9be9a8;
-}
-
-.light .heat-cell.level-2 {
-  background: #40c463;
-}
-
-.light .heat-cell.level-3 {
-  background: #30a14e;
-}
-
-.light .heat-cell.level-4 {
-  background: #216e39;
-}
+.light .heat-cell.level-0 { background: #ebedf0; }
+.light .heat-cell.level-1 { background: #9be9a8; }
+.light .heat-cell.level-2 { background: #40c463; }
+.light .heat-cell.level-3 { background: #30a14e; }
+.light .heat-cell.level-4 { background: #216e39; }
 
 .month-label-row {
   display: grid;
   gap: 3px;
   margin-top: 1px;
-}
-
-.weak-inner .card-title {
-  font-size: 13px;
-  margin-bottom: 12px;
 }
 
 .month-lbl {
@@ -652,4 +634,305 @@ body {
   z-index: 999;
   transform: translateX(-50%);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* =====================================================
+   RECENT ACTIVITY & INSIGHTS  (ROW 3)
+   ===================================================== */
+
+.recent-card {
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Header row inside the card */
+.recent-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.recent-count-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 2px 9px;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+}
+
+/* Empty state */
+.recent-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex: 1;
+  padding: 20px 0;
+}
+
+.recent-empty-icon {
+  font-size: 28px;
+  opacity: 0.5;
+}
+
+.recent-empty-text {
+  font-size: 12px;
+  color: var(--text3);
+  font-style: italic;
+}
+
+/* Two-column layout: list | divider | insights */
+.recent-body {
+  display: grid;
+  grid-template-columns: 1fr 1px minmax(260px, 320px);
+  gap: 0;
+  align-items: start;
+  min-height: 0;
+}
+
+/* ── Problem List Column ── */
+.recent-list-col {
+  padding-right: 18px;
+  min-width: 0;
+}
+
+.recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  max-height: 180px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+
+.recent-list::-webkit-scrollbar { width: 4px; }
+.recent-list::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+/* Single problem row */
+.recent-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--recent-item-bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 9px 12px;
+  transition: background 0.15s, border-color 0.15s;
+  flex-shrink: 0;
+}
+
+.recent-item:hover {
+  background: var(--recent-item-hover);
+  border-color: var(--accent);
+}
+
+.recent-item-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  flex: 1;
+}
+
+.recent-rank {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  flex-shrink: 0;
+  width: 22px;
+}
+
+.recent-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.recent-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.recent-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.recent-date {
+  font-size: 11px;
+  color: var(--text3);
+}
+
+.recent-platform {
+  font-size: 10px;
+  font-weight: 700;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 5px;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.3px;
+}
+
+.recent-item-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+/* Difficulty badge */
+.diff-badge {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.recent-time {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text2);
+  font-family: 'DM Mono', monospace;
+  min-width: 42px;
+  text-align: right;
+}
+
+/* ── Vertical Divider ── */
+.recent-divider {
+  width: 1px;
+  background: var(--divider);
+  align-self: stretch;
+  margin: 0 18px;
+}
+
+/* ── Insights Column ── */
+.insights-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+/* Three insight stat cards */
+.insight-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.insight-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: var(--card2);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 10px 8px;
+  text-align: center;
+  transition: border-color 0.15s;
+}
+
+.insight-card--fast { border-top: 2px solid #22c55e; }
+.insight-card--slow { border-top: 2px solid #ef4444; }
+
+.insight-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.insight-icon--avg  { background: var(--insight-avg-bg);  color: var(--insight-avg-text); }
+.insight-icon--fast { background: var(--insight-fast-bg); color: var(--insight-fast-text); }
+.insight-icon--slow { background: var(--insight-slow-bg); color: var(--insight-slow-text); }
+
+.insight-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.insight-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  font-family: 'DM Mono', monospace;
+}
+
+/* ── Pace range bar ── */
+.pace-bar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.pace-bar-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--text3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pace-bar-track {
+  position: relative;
+  height: 6px;
+  background: var(--pace-fill);
+  border-radius: 99px;
+  overflow: visible;
+}
+
+/* Avg marker diamond on the bar */
+.pace-bar-avg {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  width: 10px;
+  height: 10px;
+  background: var(--pace-marker);
+  border-radius: 2px;
+  border: 2px solid var(--card);
+  transition: left 0.4s ease;
+}
+
+.pace-bar-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
 }
