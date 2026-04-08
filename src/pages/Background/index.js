@@ -86,7 +86,9 @@ async function saveProblemTime() {
     problem: currentProblem,
     timeSpent: problemTime,
     solved: currentProblem?.solved || false,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    start:problemStartTime,
+    end:Date.now()
   });
 
   await chrome.storage.local.set({ [todayKey]: sessions });
@@ -227,7 +229,9 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
   if (message.type === "PROBLEM_DETECTED") {
 
-    await saveProblemTime();
+    if(currentProblem && problemStartTime){
+      await saveProblemTime();
+    }
 
     currentProblem = {
       ...message.data,
@@ -239,7 +243,7 @@ chrome.runtime.onMessage.addListener(async (message) => {
 
   if (message.type === "PROBLEM_SOLVED") {
 
-    if (currentProblem) {
+    if (currentProblem && problemStartTime) {
       currentProblem.solved = true;
     }
 
@@ -307,7 +311,7 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     platform: currentPlatform,
     start: startTime,
     end: now,
-    duration: duration
+    duration: duration,
   });
 
   await chrome.storage.local.set({ [todayKey]: sessions });

@@ -1,3 +1,5 @@
+let lastProblemUrl=null;
+
 console.log("Content script loaded");
 
 /* =========================
@@ -209,24 +211,52 @@ function extractGFGProblemData() {
 
 const platform = getCurrentPlatform();
 
+// 🔥 INITIAL DETECTION
 if (platform === "leetcode") {
-
   setTimeout(() => {
-
     const problemData = extractLeetCodeProblemData();
 
-    if (problemData) {
+    if (problemData && problemData.url !== lastProblemUrl) {
+
+      lastProblemUrl = problemData.url;
 
       chrome.runtime.sendMessage({
         type: "PROBLEM_DETECTED",
         data: problemData
       });
-
     }
-
-  }, 4000);
-
+  }, 3000);
 }
+
+let lastUrl = location.href;
+
+new MutationObserver(() => {
+  const currentUrl = location.href;
+
+  if (currentUrl !== lastUrl) {
+    lastUrl = currentUrl;
+
+    console.log("🔄 URL changed");
+
+    const platform = getCurrentPlatform();
+
+    if (platform === "leetcode") {
+      setTimeout(() => {
+        const problemData = extractLeetCodeProblemData();
+
+        if (problemData && problemData.url !== lastProblemUrl) {
+
+          lastProblemUrl=problemData.url;
+
+          chrome.runtime.sendMessage({
+            type: "PROBLEM_DETECTED",
+            data: problemData
+          });
+        }
+      }, 2000);
+    }
+  }
+}).observe(document.body, { subtree: true, childList: true });
 
 
 if (platform === "geeksforgeeks") {
@@ -235,7 +265,9 @@ if (platform === "geeksforgeeks") {
 
     const problemData = extractGFGProblemData();
 
-    if (problemData) {
+    if (problemData && problemData.url!== lastProblemUrl) {
+
+      lastProblemUrl=problemData.url;
 
       chrome.runtime.sendMessage({
         type: "PROBLEM_DETECTED",

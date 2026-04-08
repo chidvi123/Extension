@@ -90,7 +90,7 @@ function Analytics() {
           difficulty: r.problem?.difficulty || "Unknown",
           platform:   r.platform || "",
           time:       r.timeSpent || 0,
-          date:       r.end || r.start || null,
+          date:       r.timestamp || r.end || r.start || null,
         });
       }
     });
@@ -120,8 +120,8 @@ function Analytics() {
 
     // ── REST OF STATS ─────────────────────────────────────────
     const days365  = buildDayArray(sessionData, 365);
-    const active   = days365.filter((d) => d.count > 0).length;
-    const overallAvg = totalSolveTime / (solved || 1);
+    const active   = days365.filter((d) =>( d.count || 0) > 0).length;
+    const overallAvg = solved >0 ? totalSolveTime/solved :0;
 
     const weak = Object.entries(topics)
       .filter(([, s]) => s.time / s.count > overallAvg && s.count <= 3)
