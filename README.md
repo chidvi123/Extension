@@ -131,6 +131,9 @@ extension/
 ├── manifest.json           # Extension configuration
 └── README.md
 
+
+```
+
 ## ⚙️ How It Works
 
 1. User opens a coding platform (LeetCode or GeeksforGeeks)
@@ -198,13 +201,10 @@ Data is stored in Chrome Local Storage in a structured format:
 }
 
 
----
-
-# 🧠 System Flow (Optional Add – VERY GOOD)
-
 ```md
 
 ## 🔄 System Flow
+
 User Action → Content Script → Background Script → Storage → UI (Popup / Analytics)
 - Content Script captures problem and submission events
 - Background Script handles tracking and persistence
