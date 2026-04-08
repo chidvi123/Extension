@@ -201,7 +201,7 @@ Data is stored in Chrome Local Storage in a structured format:
 }
 
 
-```md
+```
 
 ## 🔄 System Flow
 
