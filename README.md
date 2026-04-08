@@ -130,3 +130,84 @@ extension/
 ├── assets/                 # Icons and images
 ├── manifest.json           # Extension configuration
 └── README.md
+
+## ⚙️ How It Works
+
+1. User opens a coding platform (LeetCode or GeeksforGeeks)
+
+2. Content Script injects into the page and:
+   - Extracts problem details (title, difficulty, topics, URL)
+   - Detects problem changes (SPA navigation handling)
+
+3. Background Script:
+   - Starts tracking time for the session
+   - Stores platform activity continuously
+   - Tracks problem-level sessions
+
+4. When user submits solution:
+   - Content script detects submission
+   - Checks for "Accepted" result
+   - Sends `PROBLEM_SOLVED` event
+
+5. Background Script:
+   - Marks problem as solved
+   - Saves session with duration and metadata
+
+6. Data Storage:
+   - Stored in Chrome Local Storage
+   - Organized day-wise using date keys
+   - Each day contains platform + problem sessions
+
+7. Popup:
+   - Reads live data from storage
+   - Displays current stats, streak, and goals
+
+8. Analytics Page:
+   - Processes stored data
+   - Generates insights, charts, and trends
+
+
+## 📊 Data Model
+
+Data is stored in Chrome Local Storage in a structured format:
+
+```json
+{
+  "2026-04-08": [
+    {
+      "type": "platform",
+      "platform": "leetcode",
+      "start": 1712570000000,
+      "end": 1712570300000,
+      "duration": 300
+    },
+    {
+      "type": "problem",
+      "platform": "leetcode",
+      "problem": {
+        "name": "Two Sum",
+        "difficulty": "Easy",
+        "topics": ["Array", "Hash Table"]
+      },
+      "start": 1712570000000,
+      "end": 1712570200000,
+      "duration": 200,
+      "solved": true
+    }
+  ]
+}
+
+
+---
+
+# 🧠 System Flow (Optional Add – VERY GOOD)
+
+```md
+
+## 🔄 System Flow
+User Action → Content Script → Background Script → Storage → UI (Popup / Analytics)
+- Content Script captures problem and submission events
+- Background Script handles tracking and persistence
+- Storage acts as the central data source
+- UI components read and visualize the data
+
