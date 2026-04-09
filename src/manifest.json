@@ -1,7 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Chrome Extension with React & Webpack",
-  "description": "A chrome extension boilerplate built with React 17, Webpack 5, and Webpack Dev Server 4",
+  "name": "Coding Tracker",
+  "description": "Track Your DSA Progress on LC & GFG",
+  "version":"1.0.0",
   "options_page": "options.html",
   "background": { "service_worker": "background.bundle.js" },
   "permissions": ["tabs", "idle", "storage","alarms"],
