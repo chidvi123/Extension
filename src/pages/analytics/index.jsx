@@ -9,6 +9,7 @@ import PieChart from "./PieChart";
 import WeakTopics from "./WeakTopics";
 import Heatmap from "./Heatmap";
 import TopicChart from "./TopicAnalysis";
+import Footer from "./Footer";
 
 // Difficulty badge color helper
 function difficultyColor(difficulty) {
@@ -202,7 +203,6 @@ function Analytics() {
                 { label: "Medium", value: diffStats.Medium, color: "#f59e0b" },
                 { label: "Hard",   value: diffStats.Hard,   color: "#ef4444" },
               ]}
-              showTotal
             />
           </div>
         </div>
@@ -334,6 +334,7 @@ function Analytics() {
         </div>
 
       </div>
+      <Footer/>
     </div>
   );
 }
